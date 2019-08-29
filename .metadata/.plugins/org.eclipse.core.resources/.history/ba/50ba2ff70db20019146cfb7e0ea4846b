@@ -1,0 +1,5 @@
+package etf.unibl.org.model;
+
+public class User {
+
+}

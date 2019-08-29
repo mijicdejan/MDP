@@ -1,0 +1,93 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.Font;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+@SuppressWarnings("serial")
+public class LoginForm extends JFrame {
+
+	private JPanel contentPane;
+	
+	private JLabel lblUsername;
+	private JTextField tfUsername;
+	private JLabel lblPassword;
+	private JPasswordField pfPassword;
+	private JButton btnLogin;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					LoginForm frame = new LoginForm();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public LoginForm() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(412, 236, 376, 228);
+		setLocationRelativeTo(null);
+		setTitle("Početna");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBackground(Color.WHITE);
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		initComponents();
+		initButtonListener();
+	}
+	
+	private void initComponents() {
+		lblUsername = new JLabel("Korisničko ime: ");
+		lblUsername.setFont(new Font(lblUsername.getFont().getFontName(), Font.PLAIN, 16));
+		lblUsername.setBounds(30, 20, 300, 25);
+		contentPane.add(lblUsername);
+		
+		tfUsername = new JTextField();
+		tfUsername.setBounds(30, 45, 300, 30);
+		contentPane.add(tfUsername);
+		
+		lblPassword = new JLabel("Lozinka: ");
+		lblPassword.setFont(new Font(lblPassword.getFont().getFontName(), Font.PLAIN, 16));
+		lblPassword.setBounds(30, 75, 300, 25);
+		contentPane.add(lblPassword);
+		
+		pfPassword = new JPasswordField();
+		pfPassword.setBounds(30, 100, 300, 30);
+		contentPane.add(pfPassword);
+		
+		btnLogin = new JButton("Prijavi me");
+		btnLogin.setBackground(Color.WHITE);
+		btnLogin.setFont(new Font(btnLogin.getFont().getFontName(), Font.PLAIN, 14));
+		btnLogin.setBounds(230, 140, 100, 30);
+		btnLogin.setBorder(new LineBorder(Color.BLACK));
+		contentPane.add(btnLogin);
+	}
+	
+	private void initButtonListener() {
+		
+	}
+
+}

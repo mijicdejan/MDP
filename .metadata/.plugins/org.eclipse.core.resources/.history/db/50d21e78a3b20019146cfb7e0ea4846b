@@ -1,0 +1,73 @@
+package org.unibl.etf.main;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import org.unibl.etf.model.Session;
+import org.unibl.etf.model.User;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+
+public class Main {
+	
+	private static String INSTANCE_NAME = "Test";
+	private static String PATH;
+	
+	public static void main(String[] args) {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			INSTANCE_NAME = properties.getProperty("INSTANCE_NAME");
+			PATH = properties.getProperty("PATH");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ArrayList<User> users = new ArrayList<>();
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			Set<String> set = jedis.keys(INSTANCE_NAME + ":users" + "*");
+			for(String s : set) {
+				if(s.split(":").length == 3) {
+					Map<String, String> fields = jedis.hgetAll(s);
+					String firstName = fields.get("firstName");
+					String lastName = fields.get("lastName");
+					String username = fields.get("username");
+					String password = fields.get("password");
+					boolean blocked = "true".equals(fields.get("blocked"));
+					Map<String, String> sessions = jedis.hgetAll(INSTANCE_NAME + ":users:" + username + ":sessions");
+					ArrayList<Session> sessionsList = new ArrayList<>();
+					for(Map.Entry<String, String> entry : sessions.entrySet()) {
+						sessionsList.add(new Session(entry.getValue(), entry.getKey()));
+					}
+					User user = new User(firstName, lastName, username, password, blocked, null);
+					user.setSessions(sessionsList.toArray(new Session[sessionsList.size()]));
+					users.add(user);
+				}
+			}
+		}
+		pool.close();
+		
+		Gson gsonBuilder = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").create();
+		String json = gsonBuilder.toJson(users);
+		try {
+			Files.write(Paths.get(PATH), json.getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Kraj");
+	}
+
+}

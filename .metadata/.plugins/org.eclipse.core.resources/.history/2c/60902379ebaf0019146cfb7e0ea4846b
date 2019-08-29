@@ -1,0 +1,75 @@
+package org.unibl.etf.service;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+
+import org.unibl.etf.model.User;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+
+public class AccountsService {
+	
+	public static String instanceName = "Test"; // properties
+	
+	public static User createAccount(String firstName, String lastName) {
+		String username = generateUsername(firstName, lastName);
+		String password = generatePassword();
+		User user = new User(firstName, lastName, username, password, false);
+		
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			jedis.set(instanceName, "OK");
+			jedis.hmset(instanceName + ":users:" + user.getUsername(), user.toMap());
+		}
+		pool.close();
+		
+		return user;
+	}
+	
+	public static boolean blockUnblockAccount(User user) {
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			jedis.hset(instanceName + ":users:" + user.getUsername(), "blocked", user.isBlocked() ? "false" : "true");
+		}
+		pool.close();
+		return true;
+	}
+	
+	private static String generateUsername(String firstName, String lastName) {
+		String username = firstName.toLowerCase() + "." + lastName.toLowerCase();
+		return username;
+	}
+	
+	private static String generatePassword() {
+		String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		StringBuilder sb = new StringBuilder();
+		Random rand = new Random();
+		for(int i = 0; i < 8; i++) {
+			sb.append(characters.charAt(rand.nextInt(characters.length())));
+		}
+		return sb.toString();
+	}
+	
+	private static ArrayList<String> getAllUsernames() {
+		ArrayList<String> usernames = new ArrayList<>();
+		
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			Set<String> set = jedis.keys(instanceName + ":users" + "*");
+			for(String s : set) {
+				if(s.split(":").length == 3) {
+					Map<String, String> fields = jedis.hgetAll(s);
+					String username = fields.get("username");
+					usernames.add(username);
+				}
+			}
+		}
+		pool.close();
+		
+		return usernames;
+	}
+
+}

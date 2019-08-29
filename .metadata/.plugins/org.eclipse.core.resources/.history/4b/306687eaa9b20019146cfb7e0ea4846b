@@ -1,0 +1,68 @@
+package org.unibl.etf.main;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Properties;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.unibl.etf.model.Session;
+import org.unibl.etf.model.User;
+
+import com.google.gson.Gson;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+
+public class Main {
+	
+	private static String INSTANCE_NAME = "Test";
+	private static String PATH;
+
+	public static void main(String[] args) {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			INSTANCE_NAME = properties.getProperty("INSTANCE_NAME");
+			PATH = properties.getProperty("PATH");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ArrayList<User> users = new ArrayList<>();
+		try {
+			byte[] bytes = Files.readAllBytes(Paths.get(PATH));
+			String json = new String(bytes);
+			JSONArray jsonArray = new JSONArray(json);
+			for(int i = 0; i < jsonArray.length(); i++) {
+				JSONObject jsonObject = jsonArray.getJSONObject(i);
+				User user = new Gson().fromJson(jsonObject.toString(), User.class);
+				users.add(user);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			jedis.set(INSTANCE_NAME, "OK");
+			for(User u : users) {
+				jedis.hdel(INSTANCE_NAME + ":users:", u.getUsername());
+				jedis.hmset(INSTANCE_NAME + ":users:" + u.getUsername(), u.toMap());
+				Session[] sessionsArr = u.getSessions();
+				HashMap<String, String> sessions = new HashMap<>();
+				for(Session s : sessionsArr) {
+					sessions.put(s.getLogoutTime(), s.getLoginTime());
+				}
+				jedis.hmset(INSTANCE_NAME + ":users:" + u.getUsername() + ":sessions", sessions);
+			}
+		}
+		pool.close();
+	}
+
+}

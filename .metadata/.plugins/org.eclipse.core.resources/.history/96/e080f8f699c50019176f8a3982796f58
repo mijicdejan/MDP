@@ -1,0 +1,23 @@
+package org.unibl.etf.view;
+
+import java.awt.image.BufferedImage;
+
+import javax.swing.JPanel;
+
+@SuppressWarnings("serial")
+public class ImagePanel extends JPanel {
+	
+	private BufferedImage image;
+
+	/**
+	 * Create the panel.
+	 */
+	public ImagePanel() {
+
+	}
+	
+	public void setBackground(BufferedImage image) {
+		this.image = image;
+	}
+
+}

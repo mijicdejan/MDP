@@ -1,0 +1,40 @@
+package org.unibl.etf.monitoring;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+public class MonitoringThread extends Thread {
+	
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
+	
+	private boolean loggedIn;
+	
+	public MonitoringThread(ObjectInputStream in, ObjectOutputStream out) {
+		this.in = in;
+		this.out = out;
+		loggedIn = true;
+	}
+	
+	@Override
+	public void run() {
+		try {
+			while(loggedIn) {
+				String responseType = (String) in.readObject();
+				if("END".equals(responseType)) {
+					loggedIn = false;
+				} else if("MONITORING".equals(responseType)) {
+					// TODO praviti screenshotove i slati
+					// moguce da nakon svakog treba pokupiti OK sa ulaza
+					// kad ulaz ne bude OK tad treba prekinuti slanje
+				}
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

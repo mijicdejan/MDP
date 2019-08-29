@@ -1,0 +1,53 @@
+package org.unibl.etf.main;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.unibl.etf.model.Session;
+import org.unibl.etf.model.User;
+
+import com.google.gson.Gson;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+
+public class Main {
+
+	public static void main(String[] args) {
+		try {
+			ArrayList<User> users = new ArrayList<>();
+			byte[] bytes = Files.readAllBytes(Paths.get("C:\\Users\\PC\\Desktop\\users.txt"));
+			String json = new String(bytes);
+			JSONArray jsonArray = new JSONArray(json);
+			for(int i = 0; i < jsonArray.length(); i++) {
+				JSONObject jsonObject = jsonArray.getJSONObject(i);
+				User user = new Gson().fromJson(jsonObject.toString(), User.class);
+				users.add(user);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			jedis.set(instanceName, "OK");
+			for(User u : users) {
+				jedis.hdel(instanceName + ":users:", u.getUsername());
+				jedis.hmset(instanceName + ":users:" + u.getUsername(), u.toMap());
+				Session[] sessionsArr = u.getSessions();
+				HashMap<String, String> sessions = new HashMap<>();
+				for(Session s : sessionsArr) {
+					sessions.put(s.getLogoutTime(), s.getLoginTime());
+				}
+				jedis.hmset(instanceName + ":users:" + u.getUsername() + ":sessions", sessions);
+			}
+		}
+		pool.close();
+		System.out.println("END");
+	}
+
+}

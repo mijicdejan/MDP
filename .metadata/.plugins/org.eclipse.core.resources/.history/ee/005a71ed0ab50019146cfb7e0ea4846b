@@ -1,0 +1,92 @@
+package org.unibl.etf.receiver;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+
+import javax.net.ssl.SSLSocket;
+
+import org.unibl.etf.model.Message;
+import org.unibl.etf.model.User;
+import org.unibl.etf.util.MessagesManager;
+import org.unibl.etf.util.PropertyManager;
+
+public class ReceiverThread extends Thread {
+	
+private String MESSAGES_PATH;
+	
+	private ObjectOutputStream out;
+	private ObjectInputStream in;
+	
+	public ReceiverThread(SSLSocket socket) {
+		MESSAGES_PATH = PropertyManager.getInstance().getMessagesPath();
+		try {
+			out = new ObjectOutputStream(socket.getOutputStream());
+			in = new ObjectInputStream(socket.getInputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+	}
+	
+	@Override
+	public void run() {
+		try {
+			Message message;
+			try {
+				message = (Message) in.readObject();
+			} catch (ClassCastException e) {
+				message = null;
+			}
+			while(message == null) {
+				out.writeObject("NOK");
+				out.flush();
+			}
+			out.writeObject("OK");
+			User sender = message.getSender();
+			User receiver = message.getReceiver();
+			out.writeObject("LIST");
+			File senderDirectory = new File(MESSAGES_PATH + File.separator + sender.getUsername());
+			if(!senderDirectory.exists()) {
+				senderDirectory.mkdir();
+			}
+			File receiverDirectory = new File(MESSAGES_PATH + File.separator + receiver.getUsername());
+			if(!receiverDirectory.exists()) {
+				receiverDirectory.mkdir();
+			}
+			File unreadDirectory = new File(MESSAGES_PATH + File.separator + receiver.getUsername() + File.separator + "unread");
+			if(!unreadDirectory.exists()) {
+				unreadDirectory.mkdir();
+			}
+			File senderReadFile = new File(MESSAGES_PATH + File.separator + sender.getUsername() + File.separator + receiver.getUsername() + ".txt");
+			File receiverReadFile = new File(MESSAGES_PATH + File.separator + receiver.getUsername() + File.separator + sender.getUsername() + ".txt");
+			File unreadFile = new File(MESSAGES_PATH + File.separator + receiver.getUsername() + File.separator + "unread" + File.separator + sender.getUsername() + ".txt");
+			if(senderReadFile.exists()) {
+				ArrayList<Message> messages = MessagesManager.getInstance().deserializeWithGson(senderReadFile);
+				messages.add(message);
+				MessagesManager.getInstance().serializeWithGson(messages, senderReadFile);
+			}
+			if(receiverReadFile.exists()) {
+				messages.addAll(MessagesManager.getInstance().deserializeWithGson(receiverReadFile));
+			}
+			if(unreadFile.exists()) {
+				messages.addAll(MessagesManager.getInstance().deserializeWithGson(unreadFile));
+			}
+			out.writeObject(messages);
+			out.flush();
+			// TODO prepisati sve linije u fajl procitanih i obrisati fajl neprocitanih
+			
+			// TODO serverReceiver pise i u folderu onoga ko salje, da bi se sve poruke i poslane i primljene nasle u istom fajlu
+			// TODO popraviti citanje poruka u skladu sa tim
+			// TODO mozda praviti posebne fajlove u konverzaciji za poslano i primljeno, pa ih onda sastaviti i sortirati
+			// TODO ?????
+			// TODO Mozda serijalizacija?????
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

@@ -1,0 +1,84 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.FlowLayout;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+@SuppressWarnings("serial")
+public class MainForm extends JFrame {
+
+	private JPanel contentPane;
+	
+	private JPanel messagePane;
+	private JScrollPane usersPane;
+	private JPanel dataPane;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					MainForm frame = new MainForm();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public MainForm() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 0, 800, 700);
+		setTitle("Pocetna");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		initComponents();
+	}
+	
+	private void initComponents() {
+		messagePane = new JPanel();
+		messagePane.setBounds(0, 0, 784, 100);
+		messagePane.setBorder(new LineBorder(Color.BLACK));
+		messagePane.setLayout(null);
+		contentPane.add(messagePane);
+		
+		usersPane = new JScrollPane();
+		usersPane.setBounds(0, 100, 200, 562);
+		usersPane.setBorder(new LineBorder(Color.BLACK));
+		usersPane.setLayout(new FlowLayout(FlowLayout.CENTER));
+		usersPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		contentPane.add(usersPane);
+		
+		dataPane = new JPanel();
+		dataPane.setBounds(200, 100, 584, 562);
+		dataPane.setBorder(new LineBorder(Color.BLACK));
+		dataPane.setLayout(null);
+		contentPane.add(dataPane);
+		
+		int y = 20;
+		for(int i = 0; i < 20; i++) {
+			JButton btn = new JButton("btn " + i);
+			btn.setBounds(20, y, 160, 30);
+			usersPane.add(btn);
+			y += 100;
+		}
+	}
+
+}

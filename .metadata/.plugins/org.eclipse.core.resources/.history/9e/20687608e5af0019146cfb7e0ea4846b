@@ -1,0 +1,220 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Comparator;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.xml.rpc.ServiceException;
+
+import org.unibl.etf.api.AccountsApi;
+import org.unibl.etf.api.AccountsApiServiceLocator;
+import org.unibl.etf.model.User;
+
+@SuppressWarnings("serial")
+public class BlockUnblockForm extends JDialog {
+	
+	private ArrayList<User> activeUsers;
+	private ArrayList<User> blockedUsers;
+	private MainForm mainForm;
+
+	private JPanel contentPane;
+	
+	private JComboBox<String> cmbType;
+	
+	private JTable tblUsers;
+	private DefaultTableModel dtm;
+	private JScrollPane usersScroll;
+	
+	private JButton btnBlock;
+	private JButton btnUnblock;
+
+	/**
+	 * Create the dialog.
+	 */
+	public BlockUnblockForm(ArrayList<User> users, MainForm mainForm) {
+		activeUsers = new ArrayList<>();
+		blockedUsers = new ArrayList<>();
+		for(User user : users) {
+			if(user.isBlocked()) {
+				blockedUsers.add(user);
+			} else {
+				activeUsers.add(user);
+			}
+		}
+		this.mainForm = mainForm;
+		
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				BlockUnblockForm.this.windowClosing();
+			}
+		});
+		
+		setModalityType(ModalityType.APPLICATION_MODAL);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(300, 100, 600, 500);
+		setBackground(Color.WHITE);
+		setTitle("Promjena stanja naloga");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBackground(Color.WHITE);
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		initComponents();
+		initComboBoxListener();
+		initButtonListeners();
+	}
+	
+	private void initComponents() {
+		cmbType = new JComboBox<>();
+		cmbType.setBackground(Color.WHITE);
+		cmbType.setForeground(Color.BLACK);
+		cmbType.setBounds(30, 10, 300, 30);
+		cmbType.addItem("Aktivni");
+		cmbType.addItem("Blokirani");
+		contentPane.add(cmbType);
+		
+		initUsersTable("active");
+		
+		btnBlock = new JButton("Blokiraj");
+		btnBlock.setBackground(Color.WHITE);
+		btnBlock.setFont(new Font(btnBlock.getFont().getFontName(), Font.PLAIN, 14));
+		btnBlock.setBounds(454, 422, 100, 30);
+		btnBlock.setBorder(new LineBorder(Color.BLACK));
+		contentPane.add(btnBlock);
+		
+		btnUnblock = new JButton("Aktiviraj");
+		btnUnblock.setVisible(false);
+		btnUnblock.setBackground(Color.WHITE);
+		btnUnblock.setFont(new Font(btnUnblock.getFont().getFontName(), Font.PLAIN, 14));
+		btnUnblock.setBounds(454, 422, 100, 30);
+		btnUnblock.setBorder(new LineBorder(Color.BLACK));
+		contentPane.add(btnUnblock);
+	}
+	
+	private void initUsersTable(String type) {
+		try {
+			contentPane.remove(usersScroll);
+			contentPane.repaint();
+			contentPane.revalidate();
+		} catch (Exception e) {}
+		
+		dtm = new DefaultTableModel();
+		dtm.addColumn("Ime");
+		dtm.addColumn("Prezime");
+		dtm.addColumn("Korisničko ime");
+		
+		if("active".equals(type)) {
+			for(User user : activeUsers) {
+				Object[] rowData = { user.getFirstName(), user.getLastName(), user.getUsername() };
+				dtm.addRow(rowData);
+			}
+		} else {
+			for(User user : blockedUsers) {
+				Object[] rowData = { user.getFirstName(), user.getLastName(), user.getUsername() };
+				dtm.addRow(rowData);
+			}
+		}
+		
+		tblUsers = new JTable(dtm);
+		tblUsers.setAutoCreateRowSorter(true);
+		tblUsers.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tblUsers.setBackground(Color.WHITE);
+		
+		usersScroll = new JScrollPane(tblUsers);
+		usersScroll.setBounds(30, 50, 524, 362);
+		contentPane.add(usersScroll);
+	}
+	
+	private void initComboBoxListener() {
+		cmbType.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				cmbTypeSelectionChanged();
+			}
+		});
+	}
+	
+	private void cmbTypeSelectionChanged() {
+		int index = cmbType.getSelectedIndex();
+		if(index == 0) {
+			initUsersTable("active");
+			btnBlock.setVisible(true);
+			btnUnblock.setVisible(false);
+		} else {
+			initUsersTable("blocked");
+			btnBlock.setVisible(false);
+			btnUnblock.setVisible(true);
+		}
+	}
+	
+	private void initButtonListeners() {
+		btnBlock.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int index = tblUsers.getSelectedRow();
+				if(index == -1) {
+					JOptionPane.showMessageDialog(null, "Niste odabrali korisnika.");
+				} else {
+					User user = activeUsers.remove(index);
+					AccountsApiServiceLocator loc = new AccountsApiServiceLocator();
+					try {
+						AccountsApi service = loc.getAccountsApi();
+						service.blockUnblockAccount(user);
+					} catch (ServiceException ex) {
+						ex.printStackTrace();
+					} catch (RemoteException ex) {
+						ex.printStackTrace();
+					}
+					blockedUsers.add(user);
+					blockedUsers.sort(Comparator.comparing(User::getFirstName));
+					initUsersTable("active");
+				}
+			}
+		});
+		
+		btnUnblock.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int index = tblUsers.getSelectedRow();
+				if(index == -1) {
+					JOptionPane.showMessageDialog(null, "Niste odabrali korisnika.");
+				} else {
+					User user = blockedUsers.remove(index);
+					AccountsApiServiceLocator loc = new AccountsApiServiceLocator();
+					try {
+						AccountsApi service = loc.getAccountsApi();
+						service.blockUnblockAccount(user);
+					} catch (ServiceException ex) {
+						ex.printStackTrace();
+					} catch (RemoteException ex) {
+						ex.printStackTrace();
+					}
+					activeUsers.add(user);
+					activeUsers.sort(Comparator.comparing(User::getFirstName));
+					initUsersTable("blocked");
+				}
+			}
+		});
+	}
+
+}

@@ -1,0 +1,812 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.unibl.etf.model.FileTransferData;
+import org.unibl.etf.model.Message;
+import org.unibl.etf.model.User;
+import org.unibl.etf.multicast.MulticastClient;
+import org.unibl.etf.receiver.ReceiverServer;
+import org.unibl.etf.rmi.FilesInterface;
+import org.unibl.etf.util.PropertyManager;
+import org.unibl.etf.util.SerializationManager;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+@SuppressWarnings("serial")
+public class MainForm extends JFrame {
+	
+	private String BASE_URL;
+	private String POLICY_PATH;
+	private String DATE_TIME_FORMAT;
+	private String NOTIFICATION_NUMBER_FILE;
+	
+	private HashMap<JButton, User> buttons;
+	private ArrayList<User> users;
+	private JButton pressedButton;
+	private User user;
+	private File file;
+	private ArrayList<FileTransferData> data;
+
+	private JPanel contentPane;
+	
+	private JPanel actionsPane;
+	private JPanel notificationsPane;
+	private JScrollPane notificationsScroll;
+	private JPanel usersPane;
+	private JScrollPane usersScroll;
+	private JPanel messagesPane;
+	private JScrollPane messagesScroll;
+	private JPanel newMessagePane;
+	private JPanel newFilePane;
+	private JPanel filesPane;
+	
+	private JButton btnDataOverview;
+	private JButton btnChangePassword;
+	private JButton btnLogout;
+	
+	private JComboBox<String> cmbUsers;
+	private JLabel lblFileName;
+	private JButton btnBrowse;
+	private JButton btnSendFile;
+	
+	private JTable tblFiles;
+	private DefaultTableModel dtm;
+	private JScrollPane filesScroll;
+	private JButton btnRefresh;
+	private JButton btnDownload;
+	
+	private JTextArea taMessage;
+	private JScrollPane messageScroll;
+	private JButton btnSendMessage;
+
+	/**
+	 * Create the frame.
+	 */
+	public MainForm(User user) {
+		this.user = user;
+		BASE_URL = PropertyManager.getInstance().getUsersBaseURL();
+		POLICY_PATH = PropertyManager.getInstance().getPolicyPath();
+		DATE_TIME_FORMAT = PropertyManager.getInstance().getDateTimeFormat();
+		NOTIFICATION_NUMBER_FILE = PropertyManager.getInstance().getNotificationNumberFile();
+		
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				MainForm.this.windowClosing();
+			}
+		});
+		
+		System.setProperty("java.security.policy", POLICY_PATH + File.separator + "client_policyfile.txt");
+		if (System.getSecurityManager() == null) {
+			System.setSecurityManager(new SecurityManager());
+		}
+		
+		MulticastClient client = new MulticastClient(this);
+		client.start();
+		
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 0, 1200, 700);
+		setLocationRelativeTo(null);
+		setTitle("Glavna");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		buttons = new HashMap<>();
+		
+		initComponents();
+		initButtonListeners();
+		
+		new ReceiverServer(this).start();
+	}
+
+	private void initComponents() {
+		initActionsPane();
+		initNotificationsPane();
+		initUsersPane();
+		initMessagesPane();
+		initNewMessagePane();
+		initNewFilePane();
+		initFilesPane();
+	}
+	
+	private void initActionsPane() {
+		btnDataOverview = new JButton("Pregled korišćenja");
+		btnDataOverview.setBackground(Color.WHITE);
+		btnDataOverview.setBounds(20, 10, 160, 30);
+		btnDataOverview.setBorder(new LineBorder(Color.BLACK));
+		
+		btnChangePassword = new JButton("Promijeni lozinku");
+		btnChangePassword.setBackground(Color.WHITE);
+		btnChangePassword.setBounds(190, 10, 160, 30);
+		btnChangePassword.setBorder(new LineBorder(Color.BLACK));
+		
+		btnLogout = new JButton("Odjavi me");
+		btnLogout.setBackground(Color.WHITE);
+		btnLogout.setBounds(360, 10, 160, 30);
+		btnLogout.setBorder(new LineBorder(Color.BLACK));
+		
+		actionsPane = new JPanel();
+		actionsPane.setBackground(Color.WHITE);
+		actionsPane.setBounds(0, 0, 1184, 50);
+		actionsPane.setBorder(new LineBorder(Color.BLACK));
+		actionsPane.setLayout(null);
+		
+		actionsPane.add(btnDataOverview);
+		actionsPane.add(btnChangePassword);
+		actionsPane.add(btnLogout);
+		contentPane.add(actionsPane);
+	}
+	
+	private void initNotificationsPane() {
+		notificationsPane = new JPanel();
+		notificationsPane.setBackground(Color.WHITE);
+		notificationsPane.setBounds(0, 50, 1184, 50);
+		notificationsPane.setLayout(null);
+		
+		ArrayList<String> javaData = SerializationManager.getInstance().deserializeWithJava();
+		ArrayList<String> gsonData = SerializationManager.getInstance().deserializeWithGson();
+		ArrayList<String> xmlData = SerializationManager.getInstance().deserializeWithXML();
+		ArrayList<String> kryoData = SerializationManager.getInstance().deserializeWithKryo();
+		try {
+			String s = Files.readAllLines(Paths.get(new File(NOTIFICATION_NUMBER_FILE).getAbsolutePath())).get(0);
+			int notificationNumber = Integer.parseInt(s);
+			setNotificationLabels(notificationNumber, javaData, gsonData, xmlData, kryoData);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		notificationsScroll = new JScrollPane(notificationsPane);
+		notificationsScroll.setBounds(0, 50, 1184, 50);
+		notificationsScroll.setBorder(new LineBorder(Color.BLACK));
+		notificationsScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		notificationsScroll.getVerticalScrollBar().setValue(notificationsScroll.getVerticalScrollBar().getMaximum());
+		notificationsScroll.repaint();
+		notificationsScroll.revalidate();
+		
+		contentPane.add(notificationsScroll);
+	}
+	
+	public void initUsersPane() {
+		try {
+			contentPane.remove(usersScroll);
+			contentPane.repaint();
+			contentPane.revalidate();
+		} catch (Exception e) {}
+		
+		usersPane = new JPanel();
+		usersPane.setBackground(Color.WHITE);
+		usersPane.setBounds(0, 100, 200, 562);
+		usersPane.setLayout(null);
+		
+		users = new ArrayList<>();
+		try {
+			InputStream is = new URL(BASE_URL).openStream();
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+			String jsonText = readAll(rd);
+			JSONArray jsonArray = new JSONArray(jsonText);
+			for(int i = 0; i < jsonArray.length(); i++) {
+				JSONObject jsonObject = jsonArray.getJSONObject(i);
+				User user = new Gson().fromJson(jsonObject.toString(), User.class);
+				if(!user.getUsername().equals(this.user.getUsername())) {
+					users.add(user);
+				}
+			}
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		users.sort(Comparator.comparing(User::getFirstName).thenComparing(User::getLastName).thenComparing(User::getUsername));
+		int size = users.size();
+		int x = 20;
+		if(size > 13) {
+			x = 10;
+		}
+		int y = 10;
+		for(int i = 0; i < size; i++) {
+			User user = users.get(i);
+			JButton btn = new JButton(user.getFirstName() + " " + user.getLastName());
+			btn.setBorder(new LineBorder(Color.BLACK));
+			btn.setBackground(Color.WHITE);
+			btn.setToolTipText(user.getFirstName() + " " + user.getLastName() + "(" + user.getUsername() + ")");
+			if(i == 0) {
+				btn.setBackground(Color.LIGHT_GRAY);
+				pressedButton = btn;
+				// TODO get messages and show in messagesPane
+			}
+			btn.setBounds(x, y, 160, 30);
+			btn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					btnClickedAction(e);
+				}
+			});
+			buttons.put(btn, user);
+			usersPane.add(btn);
+			y += 40;
+		}
+		usersPane.setPreferredSize(new Dimension(180, y));
+		
+		usersScroll = new JScrollPane(usersPane);
+		usersScroll.setBounds(0, 100, 200, 562);
+		usersScroll.setBorder(new LineBorder(Color.BLACK));
+		usersScroll.repaint();
+		usersScroll.revalidate();
+		contentPane.add(usersScroll);
+	}
+	
+	private void initMessagesPane() {
+		messagesPane = new JPanel();
+		messagesPane.setBackground(Color.WHITE);
+		messagesPane.setBounds(200, 100, 434, 462);
+		messagesPane.setLayout(null);
+		
+		messagesScroll = new JScrollPane(messagesPane);
+		messagesScroll.setBounds(200, 100, 434, 462);
+		messagesScroll.setBorder(new LineBorder(Color.BLACK));
+		messagesScroll.repaint();
+		messagesScroll.revalidate();
+		
+		contentPane.add(messagesScroll);
+	}
+	
+	private void initNewMessagePane() {
+		taMessage = new JTextArea();
+		taMessage.setWrapStyleWord(true);
+		taMessage.setLineWrap(true);
+		taMessage.setBounds(10, 10, 654, 80);
+		
+		messageScroll = new JScrollPane(taMessage);
+		messageScroll.setBounds(10, 10, 304, 80);
+		messageScroll.setBorder(new LineBorder(Color.BLACK));
+		
+		btnSendMessage = new JButton("Pošalji");
+		btnSendMessage.setBackground(Color.WHITE);
+		btnSendMessage.setBounds(324, 35, 100, 30);
+		btnSendMessage.setBorder(new LineBorder(Color.BLACK));
+		
+		newMessagePane = new JPanel();
+		newMessagePane.setBackground(Color.WHITE);
+		newMessagePane.setBounds(200, 562, 434, 100);
+		newMessagePane.setBorder(new LineBorder(Color.BLACK));
+		newMessagePane.setLayout(null);
+		
+		newMessagePane.add(messageScroll);
+		newMessagePane.add(btnSendMessage);
+		contentPane.add(newMessagePane);
+	}
+	
+	private void initNewFilePane() {
+		cmbUsers = new JComboBox<String>();
+		cmbUsers.setBackground(Color.WHITE);
+		cmbUsers.setForeground(Color.BLACK);
+		cmbUsers.setBounds(10, 10, 530, 30);
+		for(User user : users) {
+			cmbUsers.addItem(user.getFirstName() + " " + user.getLastName());
+		}
+		
+		lblFileName = new JLabel("Niste odabrali fajl za slanje.");
+		lblFileName.setFont(new Font(lblFileName.getFont().getFontName(), Font.PLAIN, 12));
+		lblFileName.setBounds(10, 55, 300, 25);
+		
+		btnBrowse = new JButton("Traži");
+		btnBrowse.setBackground(Color.WHITE);
+		btnBrowse.setBounds(440, 50, 100, 30);
+		btnBrowse.setBorder(new LineBorder(Color.BLACK));
+		
+		btnSendFile = new JButton("Pošalji");
+		btnSendFile.setBackground(Color.WHITE);
+		btnSendFile.setBounds(440, 90, 100, 30);
+		btnSendFile.setBorder(new LineBorder(Color.BLACK));
+		
+		newFilePane = new JPanel();
+		newFilePane.setBackground(Color.WHITE);
+		newFilePane.setBounds(634, 100, 550, 130);
+		newFilePane.setBorder(new LineBorder(Color.BLACK));
+		newFilePane.setLayout(null);
+		
+		newFilePane.add(cmbUsers);
+		newFilePane.add(lblFileName);
+		newFilePane.add(btnBrowse);
+		newFilePane.add(btnSendFile);
+		contentPane.add(newFilePane);
+	}
+	
+	private void initFilesPane() {
+		btnRefresh = new JButton("Osvježi");
+		btnRefresh.setBackground(Color.WHITE);
+		btnRefresh.setBounds(330, 392, 100, 30);
+		btnRefresh.setBorder(new LineBorder(Color.BLACK));
+		
+		btnDownload = new JButton("Preuzmi");
+		btnDownload.setBackground(Color.WHITE);
+		btnDownload.setBounds(440, 392, 100, 30);
+		btnDownload.setBorder(new LineBorder(Color.BLACK));
+		
+		filesPane = new JPanel();
+		filesPane.setBackground(Color.WHITE);
+		filesPane.setBounds(634, 230, 550, 432);
+		filesPane.setBorder(new LineBorder(Color.BLACK));
+		filesPane.setLayout(null);
+		
+		filesPane.add(btnRefresh);
+		filesPane.add(btnDownload);
+		contentPane.add(filesPane);
+		
+		initFilesTable();
+	}
+	
+	private void initFilesTable() {
+		dtm = new DefaultTableModel();
+		dtm.addColumn("Pošiljalac");
+		dtm.addColumn("Naziv fajla");
+		dtm.addColumn("Vrijeme slanja");
+		
+		String name = "FilesServer";
+		try {
+			Registry registry = LocateRegistry.getRegistry(1099);
+			FilesInterface files = (FilesInterface) registry.lookup(name);
+			data = files.getAllFiles(user);
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
+			for(FileTransferData d : data) {
+				LocalDateTime ldt = new Date(d.getSeconds()).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+				Object[] rowData = { d.getSender().getUsername(), d.getFileName(), ldt.format(formatter) };
+				dtm.addRow(rowData);
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			e.printStackTrace();
+		}
+		
+		tblFiles = new JTable(dtm) {
+			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+				Component c = super.prepareRenderer(renderer, row, column);
+				if(column == 1) {
+					JComponent jc = (JComponent) c;
+					jc.setToolTipText(getValueAt(row, column).toString());
+				}
+				return c;
+			}
+		};
+		tblFiles.setAutoCreateRowSorter(true);
+		tblFiles.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tblFiles.setBackground(Color.WHITE);
+		
+		filesScroll = new JScrollPane(tblFiles);
+		filesScroll.setBounds(10, 10, 530, 372);
+		filesPane.add(filesScroll);
+	}
+	
+	private void initButtonListeners() {
+		btnDataOverview.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				DataOverviewForm dof = new DataOverviewForm(user);
+				dof.setVisible(true);
+			}
+		});
+		
+		btnChangePassword.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ChangePasswordForm cpf = new ChangePasswordForm(user);
+				cpf.setVisible(true);
+			}
+		});
+		
+		btnLogout.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				btnLogoutClicked();
+			}
+		});
+		
+		btnBrowse.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				btnBrowseClicked();
+			}
+		});
+		
+		btnSendFile.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				btnSendFileClicked();
+			}
+		});
+		
+		btnRefresh.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				initFilesTable();
+			}
+		});
+		
+		btnDownload.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				btnDownloadClicked();
+			}
+		});
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void btnClickedAction(ActionEvent e) {
+		JButton btn = (JButton)e.getSource();
+		pressedButton.setBackground(Color.WHITE);
+		btn.setBackground(Color.LIGHT_GRAY);
+		pressedButton = btn;
+		User receiver = buttons.get(btn);
+		// TODO get messages and show in messagesPane
+		int port = PropertyManager.getInstance().getLogoutPort();
+		try {
+			InetAddress address = InetAddress.getByName(PropertyManager.getInstance().getServerAddress());
+			SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			SSLSocket socket = (SSLSocket) factory.createSocket(address, port);
+			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+			
+			out.writeObject(receiver);
+			out.flush();
+			
+			if("SENDER".equals(in.readObject())) {
+				out.writeObject(user);
+				out.flush();
+				if("LIST".equals(in.readObject())) {
+					ArrayList<Message> messages = (ArrayList<Message>) in.readObject();
+					// TODO Prikazati poruke u panelu
+					setMessages(messages);
+				}
+			}
+		} catch (UnknownHostException ex) {
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		} catch (ClassNotFoundException ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private void btnLogoutClicked() {
+		if(postJSON()) {
+			int port = PropertyManager.getInstance().getLogoutPort();
+			try {
+				InetAddress address = InetAddress.getByName(PropertyManager.getInstance().getServerAddress());
+				SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				SSLSocket socket = (SSLSocket) factory.createSocket(address, port);
+				ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+				ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+				
+				out.writeObject(user);
+				out.flush();
+				
+				if("OK".equals(in.readObject())) {
+					LoginForm lf = new LoginForm();
+					setVisible(false);
+					lf.setVisible(true);
+				}
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void btnBrowseClicked() {
+		LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
+		try {
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+		}
+		JFileChooser fileChooser = new JFileChooser();
+		if(JFileChooser.APPROVE_OPTION == fileChooser.showDialog(null, null)) {
+			file = fileChooser.getSelectedFile();
+			lblFileName.setText(file.getName());
+		}
+		try {
+			UIManager.setLookAndFeel(lookAndFeel);
+		} catch(Exception e) {
+			System.err.println("Error: " + e.getMessage());
+		}
+	}
+	
+	private void btnSendFileClicked() {
+		if(file == null) {
+			JOptionPane.showMessageDialog(null, "Niste odabrali fajl za slanje.");
+		} else {
+			try {
+				byte[] fileData = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+				int index = cmbUsers.getSelectedIndex();
+				User receiver = users.get(index);
+				FileTransferData data = new FileTransferData(user, receiver, file.getName(), fileData, System.currentTimeMillis());
+				String name = "FilesServer";
+				Registry registry = LocateRegistry.getRegistry(1099);
+				FilesInterface files = (FilesInterface) registry.lookup(name);
+				btnBrowse.setEnabled(false);
+				btnSendFile.setEnabled(false);
+				if(files.uploadFile(data)) {
+					btnBrowse.setEnabled(true);
+					btnSendFile.setEnabled(true);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (NotBoundException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void btnDownloadClicked() {
+		int index = tblFiles.getSelectedRow();
+		if(index == -1) {
+			JOptionPane.showMessageDialog(null, "Niste odabrali fajl za skidanje.");
+		} else {
+			try {
+				String name = "FilesServer";
+				Registry registry = LocateRegistry.getRegistry(1099);
+				FilesInterface files = (FilesInterface) registry.lookup(name);
+				LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
+				try {
+					UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+				} catch(Exception e) {
+					System.err.println("Error: " + e.getMessage());
+				}
+				FileTransferData selectedData = data.get(index);
+				String fileName = selectedData.getFileName();
+				String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
+				JFileChooser fileChooser = new JFileChooser();
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("", extension);
+				fileChooser.setFileFilter(filter);
+				// TODO Postaviti podrazumijevano ime
+				if(JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(null)) {
+					File file = fileChooser.getSelectedFile();
+					if(!file.getAbsolutePath().endsWith(extension)) {
+						String path = file.getAbsolutePath();
+						path += "." + extension;
+						file = new File(path);
+					}
+					FileTransferData ftd = files.downloadFile(selectedData);
+					byte[] fileData = ftd.getFileData();
+					Files.write(Paths.get(file.getAbsolutePath()), fileData);
+				}
+				try {
+					UIManager.setLookAndFeel(lookAndFeel);
+				} catch(Exception e) {
+					System.err.println("Error: " + e.getMessage());
+				}
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			} catch (NotBoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void addNotification(String message) {
+		notificationsPane.removeAll();
+		
+		ArrayList<String> javaData = SerializationManager.getInstance().deserializeWithJava();
+		ArrayList<String> gsonData = SerializationManager.getInstance().deserializeWithGson();
+		ArrayList<String> xmlData = SerializationManager.getInstance().deserializeWithXML();
+		ArrayList<String> kryoData = SerializationManager.getInstance().deserializeWithKryo();
+		try {
+			String s = Files.readAllLines(Paths.get(new File(NOTIFICATION_NUMBER_FILE).getAbsolutePath())).get(0);
+			int notificationNumber = Integer.parseInt(s);
+			if(notificationNumber % 4 == 0) {
+				javaData.add(message);
+				SerializationManager.getInstance().serializeWithJava(javaData);
+			} else if(notificationNumber % 4 == 1) {
+				gsonData.add(message);
+				SerializationManager.getInstance().serializeWithGson(gsonData);
+			} else if(notificationNumber % 4 == 2) {
+				xmlData.add(message);
+				SerializationManager.getInstance().serializeWithXML(xmlData);
+			} else {
+				kryoData.add(message);
+				SerializationManager.getInstance().serializeWithKryo(kryoData);
+			}
+			notificationNumber++;
+			setNotificationLabels(notificationNumber, javaData, gsonData, xmlData, kryoData);
+			Files.write(Paths.get(new File(NOTIFICATION_NUMBER_FILE).getAbsolutePath()), String.valueOf(notificationNumber).getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		notificationsScroll.getVerticalScrollBar().setValue(notificationsScroll.getVerticalScrollBar().getMaximum());
+		notificationsPane.repaint();
+		notificationsPane.revalidate();
+		notificationsScroll.repaint();
+		notificationsScroll.revalidate();
+	}
+	
+	private void setNotificationLabels(int notificationNumber, ArrayList<String> javaData, ArrayList<String> gsonData, ArrayList<String> xmlData, ArrayList<String> kryoData) {
+		int y = 10;
+		for(int i = 0; i < notificationNumber; i++) {
+			if(i % 4 == 0) {
+				JTextArea ta = new JTextArea();
+				ta.setWrapStyleWord(true);
+				ta.setLineWrap(true);
+				ta.setSize(1154, Short.MAX_VALUE);
+				ta.setText(javaData.get(i / 4));
+				int height = ta.getPreferredSize().height;
+				ta.setBounds(10, y, 1154, height);
+				notificationsPane.add(ta);
+				y += height + 10;
+			} else if(i % 4 == 1) {
+				JTextArea ta = new JTextArea();
+				ta.setWrapStyleWord(true);
+				ta.setLineWrap(true);
+				ta.setSize(1154, Short.MAX_VALUE);
+				ta.setText(gsonData.get(i / 4));
+				int height = ta.getPreferredSize().height;
+				ta.setBounds(10, y, 1154, height);
+				notificationsPane.add(ta);
+				y += height + 10;
+			} else if(i % 4 == 2) {
+				JTextArea ta = new JTextArea();
+				ta.setWrapStyleWord(true);
+				ta.setLineWrap(true);
+				ta.setSize(1154, Short.MAX_VALUE);
+				ta.setText(xmlData.get(i / 4));
+				int height = ta.getPreferredSize().height;
+				ta.setBounds(10, y, 1154, height);
+				notificationsPane.add(ta);
+				y += height + 10;
+			} else {
+				JTextArea ta = new JTextArea();
+				ta.setWrapStyleWord(true);
+				ta.setLineWrap(true);
+				ta.setSize(1154, Short.MAX_VALUE);
+				ta.setText(kryoData.get(i / 4));
+				int height = ta.getPreferredSize().height;
+				ta.setBounds(10, y, 1154, height);
+				notificationsPane.add(ta);
+				y += height + 10;
+			}
+		}
+		notificationsPane.setPreferredSize(new Dimension(1184, y));
+	}
+	
+	private void setMessages(ArrayList<Message> messages) {
+		// TODO Napisati metodu
+		for(int i = 0; i < messages.size(); i++) {
+			
+		}
+	}
+	
+	private boolean postJSON() {
+		URL url;
+		try {
+			url = new URL(BASE_URL + "/logout");
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("Content-Type", "application/json");
+			OutputStream os = conn.getOutputStream();
+			Gson gsonBuilder = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").create();
+			String json = gsonBuilder.toJson(user);
+			os.write(json.getBytes());
+			os.flush();
+			if(conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+				os.close();
+				conn.disconnect();
+				return false;
+			}
+			os.close();
+			conn.disconnect();
+			return true;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (ProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	private String readAll(Reader rd) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		int cp;
+		while ((cp = rd.read()) != -1) {
+			sb.append((char) cp);
+		}
+		return sb.toString();
+	}
+	
+	private void windowClosing() {
+		if(JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(null, "Ukoliko nastavite bićete odjavljeni sa sistema. Da li ste sigurni da želite da nastavite?")) {
+			btnLogoutClicked();
+		}
+		// TODO Prekinuti zatvaranje prozora
+	}
+	
+	public void colorButton(User user) {
+		for(Map.Entry<JButton, User> entry : buttons.entrySet()) {
+			if(user.equals(entry.getValue())) {
+				entry.getKey().setBackground(Color.BLUE);
+			}
+		}
+	}
+	
+	public void colorButtons(ArrayList<User> users) {
+		for(Map.Entry<JButton, User> entry : buttons.entrySet()) {
+			if(users.contains(entry.getValue())) {
+				entry.getKey().setBackground(Color.BLUE);
+			}
+		}
+	}
+
+}

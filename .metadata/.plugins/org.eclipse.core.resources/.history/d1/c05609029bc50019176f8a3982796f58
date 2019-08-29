@@ -1,0 +1,65 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import javax.imageio.ImageIO;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
+@SuppressWarnings("serial")
+public class MonitoringForm extends JDialog {
+
+	private JPanel contentPane;
+	
+	private ImagePanel imagePanel;
+	
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
+	private boolean monitoring;
+
+	/**
+	 * Create the dialog.
+	 */
+	public MonitoringForm(ObjectInputStream in, ObjectOutputStream out) {
+		this.in = in;
+		this.out = out;
+		monitoring = true;
+		
+		setModalityType(ModalityType.APPLICATION_MODAL);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//		setBounds(412, 236, 376, 228);
+		setSize(Toolkit.getDefaultToolkit().getScreenSize());
+		setLocationRelativeTo(null);
+		setBackground(Color.WHITE);
+		setTitle("Monitoring");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBackground(Color.WHITE);
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		imagePanel = new ImagePanel();
+		imagePanel.setBounds(0, 0, contentPane.getWidth(), contentPane.getHeight());
+		startMonitoring();
+	}
+	
+	private void startMonitoring() {
+		try {
+			out.writeObject("MONITORING");
+			while(monitoring) {
+				BufferedImage image = ImageIO.read(in);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

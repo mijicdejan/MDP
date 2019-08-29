@@ -1,0 +1,7 @@
+package org.unibl.etf.monitoring;
+
+public class MonitoringAdminThread extends Thread {
+	
+	
+
+}

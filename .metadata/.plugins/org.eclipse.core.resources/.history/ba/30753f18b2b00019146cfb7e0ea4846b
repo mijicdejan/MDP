@@ -1,0 +1,28 @@
+package org.unibl.etf.rmi;
+
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+
+import org.unibl.etf.model.FileTransferData;
+
+public class FilesServer implements FilesInterface {
+
+	@Override
+	public boolean uploadFile(FileTransferData data) throws RemoteException {
+		
+		return false;
+	}
+
+	@Override
+	public ArrayList<FileTransferData> getAllFiles() throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public FileTransferData downloadFile(FileTransferData data) throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

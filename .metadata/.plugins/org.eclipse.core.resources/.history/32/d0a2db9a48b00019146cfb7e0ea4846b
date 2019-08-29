@@ -1,0 +1,55 @@
+package org.unibl.etf.view;
+
+import java.awt.EventQueue;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+
+@SuppressWarnings("serial")
+public class LoginForm extends JFrame {
+
+	private JPanel contentPane;
+	
+	private JLabel lblUsername;
+	private JTextField tfUsername;
+	private JLabel lblPassword;
+	private JPasswordField pfPassword;
+	private JButton btnLogin;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					LoginForm frame = new LoginForm();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public LoginForm() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 0, 1000, 700);
+		setLocationRelativeTo(null);
+		setTitle("Početna");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+	}
+
+}

@@ -1,0 +1,19 @@
+package org.unibl.etf.login;
+
+import javax.net.ssl.SSLSocket;
+
+public class LoginThread extends Thread {
+	
+	private SSLSocket socket;
+	
+	public LoginThread(SSLSocket socket) {
+		this.socket = socket;
+		// TODO inicijalizovati stream-ove
+	}
+	
+	@Override
+	public void run() {
+		
+	}
+
+}

@@ -1,0 +1,163 @@
+package org.unibl.etf.service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import org.unibl.etf.model.Session;
+import org.unibl.etf.model.User;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+
+public class ApiService {
+	
+	public static String instanceName = "Test"; // properties
+	
+	public static User login(String username, String password) {
+		JedisPool pool = new JedisPool("localhost");
+		try(Jedis jedis = pool.getResource()) {
+			jedis.set(instanceName, "OK");
+			Map<String, String> fields = jedis.hgetAll(instanceName + ":users:" + username);
+			String firstName = fields.get("firstName");
+			String lastName = fields.get("lastName");
+			String savedPassword = fields.get("password");
+			boolean blocked = "true".equals(fields.get("blocked"));
+			pool.close();
+			if(fields.size() == 0) {
+				return null;
+			} else if(!savedPassword.equals(password)) {
+				return null;
+			} else if(blocked) {
+				return null;
+			}
+			Map<String, String> sessions = jedis.hgetAll(instanceName + ":users:" + username + ":sessions");
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy. HH:mm:ss");
+			sessions.put(String.valueOf(0), LocalDateTime.now().format(formatter));
+			User user = new User(firstName, lastName, username, password, blocked);
+			Session[] sessionsArr = new Session[sessions.size()];
+			for(Map.Entry<String, String> entry : sessions.entrySet()) {
+				
+			}
+			user.setSessions(sessionsArr);
+			jedis.hdel(instanceName + ":users:" + username, "sessions");
+			jedis.hmset(instanceName + ":users:" + user.getUsername() + ":sessions", sessions);
+			return user;
+		}
+	}
+	
+	public static boolean logout(User user) {
+		Session[] sessionsArr = user.getSessions();
+		HashMap<String, String> sessions = new HashMap<>();
+		for(Session s : sessionsArr) {
+			sessions.put(s.getLogoutTime(), s.getLoginTime());
+		}
+		String loginTime = sessions.get(String.valueOf(0));
+		sessions.remove(String.valueOf(0));
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy. HH:mm:ss");
+		sessions.put(LocalDateTime.now().format(formatter), loginTime);
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			jedis.set(instanceName, "OK");
+			jedis.del(instanceName + ":users:" + user.getUsername());
+			jedis.del(instanceName + ":users:" + user.getUsername() + ":sessions");
+			jedis.hmset(instanceName + ":users:" + user.getUsername(), user.toMap());
+			jedis.hmset(instanceName + ":users:" + user.getUsername() + ":sessions", sessions);
+		}
+		pool.close();
+		return true;
+	}
+	
+	public static ArrayList<User> getAllUsers() {
+		ArrayList<User> users = new ArrayList<>();
+		
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			Set<String> set = jedis.keys(instanceName + ":users" + "*");
+			for(String s : set) {
+				if(s.split(":").length == 3) {
+					Map<String, String> fields = jedis.hgetAll(s);
+					String firstName = fields.get("firstName");
+					String lastName = fields.get("lastName");
+					String username = fields.get("username");
+					boolean blocked = "true".equals(fields.get("blocked"));
+					users.add(new User(firstName, lastName, username, null, blocked, null));
+				}
+			}
+		}
+		pool.close();
+		
+		return users;
+	}
+	
+	public static Map<String, String> getUserData(String username) {
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			pool.close();
+			return jedis.hgetAll(instanceName + ":users:" + username + ":sessions");
+		}
+	}
+	
+	public static boolean changePassword(String username, String newPassword) {
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			jedis.hset(instanceName + ":users:" + username, "password", newPassword);
+		}
+		pool.close();
+		return true;
+	}
+	
+	public static boolean insertHelp() {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy. HH:mm:ss");
+		ArrayList<User> users = new ArrayList<>();
+		for(int i = 0; i < 5; i++) {
+			ArrayList<Session> sessions = new ArrayList<>();
+			sessions.add(new Session(LocalDateTime.now().format(formatter), LocalDateTime.now().format(formatter)));
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			sessions.add(new Session(LocalDateTime.now().format(formatter), LocalDateTime.now().format(formatter)));
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			sessions.add(new Session(LocalDateTime.now().format(formatter), LocalDateTime.now().format(formatter)));
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			sessions.add(new Session(LocalDateTime.now().format(formatter), LocalDateTime.now().format(formatter)));
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			sessions.add(new Session(LocalDateTime.now().format(formatter), LocalDateTime.now().format(formatter)));
+			users.add(new User("firstName" + i, "lastName" + i, "username" + i, "password" + i, false, sessions.toArray(new Session[sessions.size()])));
+		}
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			jedis.set(instanceName, "OK");
+			for(User u : users) {
+				jedis.hdel(instanceName + ":users:", u.getUsername());
+				jedis.hmset(instanceName + ":users:" + u.getUsername(), u.toMap());
+				Session[] sessionsArr = u.getSessions();
+				HashMap<String, String> sessions = new HashMap<>();
+				for(Session s : sessionsArr) {
+					sessions.put(s.getLogoutTime(), s.getLoginTime());
+				}
+				jedis.hmset(instanceName + ":users:" + u.getUsername() + ":sessions", sessions);
+			}
+		}
+		pool.close();
+		return true;
+	}
+
+}

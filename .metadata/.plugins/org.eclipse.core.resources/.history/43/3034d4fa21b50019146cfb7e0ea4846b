@@ -1,0 +1,28 @@
+package org.unibl.etf.model;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+
+import org.unibl.etf.util.PropertyManager;
+
+public class ReceiverServer extends Thread {
+	
+	@Override
+	public void run() {
+		int receiverPort = PropertyManager.getInstance().getReceiverPort();
+		SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+		try {
+			ServerSocket socket = factory.createServerSocket(receiverPort);
+			while(true) {
+				SSLSocket s = (SSLSocket) socket.accept();
+				new ReceiverThread(s, receiverPort).start();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

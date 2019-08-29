@@ -1,0 +1,25 @@
+package org.unibl.etf.login;
+
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import javax.net.ssl.SSLSocket;
+
+public class LoginThread extends Thread {
+	
+	private SSLSocket socket;
+	private ObjectOutputStream out;
+	private ObjectInputStream in;
+	
+	public LoginThread(SSLSocket socket) {
+		this.socket = socket;
+		out = new ObjectOutputStream(socket.getOutputStream());
+		
+	}
+	
+	@Override
+	public void run() {
+		
+	}
+
+}

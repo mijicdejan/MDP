@@ -1,0 +1,11 @@
+package org.unibl.etf.login;
+
+public class LoginServer extends Thread {
+	
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		super.run();
+	}
+
+}

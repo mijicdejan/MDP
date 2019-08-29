@@ -1,0 +1,11 @@
+INDEX VERSION 1.4+C:\Users\PC\MDP-Projekat-2019\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+494037756.index
+1611257078.index
+1540839960.index
+3572534364.index
+2557699235.index
+1691189177.index
+2208253159.index
+91684744.index
+2467230133.index
+223240450.index

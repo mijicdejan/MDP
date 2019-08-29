@@ -1,0 +1,34 @@
+package org.unibl.etf.model;
+
+public class Session {
+	
+	private String loginTime;
+	private String logoutTime;
+	
+	public Session() {
+		super();
+	}
+
+	public Session(String loginTime, String logoutTime) {
+		super();
+		this.loginTime = loginTime;
+		this.logoutTime = logoutTime;
+	}
+
+	public String getLoginTime() {
+		return loginTime;
+	}
+
+	public void setLoginTime(String loginTime) {
+		this.loginTime = loginTime;
+	}
+
+	public String getLogoutTime() {
+		return logoutTime;
+	}
+
+	public void setLogoutTime(String logoutTime) {
+		this.logoutTime = logoutTime;
+	}
+
+}

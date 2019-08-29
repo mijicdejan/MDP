@@ -1,0 +1,96 @@
+package org.unibl.etf.receiver;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.util.ArrayList;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
+import org.unibl.etf.main.Main;
+import org.unibl.etf.model.Message;
+import org.unibl.etf.model.User;
+import org.unibl.etf.util.MessagesManager;
+import org.unibl.etf.util.PropertyManager;
+
+public class ReceiverThread extends Thread {
+	
+	private int port;
+	private ObjectOutputStream out;
+	private ObjectInputStream in;
+	
+	public ReceiverThread(SSLSocket socket, int port) {
+		this.port = port;
+		MESSAGES_PATH = PropertyManager.getInstance().getMessagesPath();
+		try {
+			out = new ObjectOutputStream(socket.getOutputStream());
+			in = new ObjectInputStream(socket.getInputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+	}
+	
+	@Override
+	public void run() {
+		try {
+			Message message;
+			try {
+				message = (Message) in.readObject();
+			} catch (ClassCastException e) {
+				message = null;
+			}
+			while(message == null) {
+				out.writeObject("NOK");
+				out.flush();
+			}
+			out.writeObject("OK");
+			User sender = message.getSender();
+			User receiver = message.getReceiver();
+			out.writeObject("LIST");
+			File senderDirectory = new File(MESSAGES_PATH + File.separator + sender.getUsername());
+			if(!senderDirectory.exists()) {
+				senderDirectory.mkdir();
+			}
+			File receiverDirectory = new File(MESSAGES_PATH + File.separator + receiver.getUsername());
+			if(!receiverDirectory.exists()) {
+				receiverDirectory.mkdir();
+			}
+			File unreadDirectory = new File(MESSAGES_PATH + File.separator + receiver.getUsername() + File.separator + "unread");
+			if(!unreadDirectory.exists()) {
+				unreadDirectory.mkdir();
+			}
+			File senderReadFile = new File(MESSAGES_PATH + File.separator + sender.getUsername() + File.separator + receiver.getUsername() + ".txt");
+			File receiverUnreadFile = new File(MESSAGES_PATH + File.separator + receiver.getUsername() + File.separator + "unread" + File.separator + sender.getUsername() + ".txt");
+			if(senderReadFile.exists()) {
+				ArrayList<Message> messages = MessagesManager.getInstance().deserializeWithGson(senderReadFile);
+				messages.add(message);
+				MessagesManager.getInstance().serializeWithGson(messages, senderReadFile);
+			}
+			if(receiverUnreadFile.exists()) {
+				ArrayList<Message> messages = MessagesManager.getInstance().deserializeWithGson(receiverUnreadFile);
+				messages.add(message);
+				MessagesManager.getInstance().serializeWithGson(messages, receiverUnreadFile);
+			}
+			if(Main.isLoggedIn(receiver)) {
+				InetAddress address = Main.getAddress(receiver);
+				SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				SSLSocket socket = (SSLSocket) factory.createSocket(address, port);
+				out = new ObjectOutputStream(socket.getOutputStream());
+				in = new ObjectInputStream(socket.getInputStream());
+				out.writeObject(sender);
+				while(!"OK".equals(in.readObject())) {
+					out.writeObject("NOK");
+					out.flush();
+				}
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

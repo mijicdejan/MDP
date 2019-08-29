@@ -1,0 +1,10 @@
+package org.unibl.etf.model;
+
+public class Session {
+	
+	private String loginTime;
+	private String logoutTime;
+	
+	
+
+}

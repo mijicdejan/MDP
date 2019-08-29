@@ -1,0 +1,42 @@
+package org.unibl.etf.logout;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import javax.net.ssl.SSLSocket;
+
+import org.unibl.etf.main.Main;
+import org.unibl.etf.model.User;
+
+public class LogoutThread extends Thread {
+	
+	private ObjectOutputStream out;
+	private ObjectInputStream in;
+	
+	public LogoutThread(SSLSocket socket) {
+		try {
+			out = new ObjectOutputStream(socket.getOutputStream());
+			in = new ObjectInputStream(socket.getInputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+	}
+	
+	@Override
+	public void run() {
+		try {
+			User user = (User) in.readObject();
+			while(!"".equals(user.getUsername())) {
+				out.writeObject("OK");
+				out.flush();
+			}
+			Main.removeUser(user);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

@@ -1,0 +1,13 @@
+package org.unibl.etf.login;
+
+import org.unibl.etf.util.PropertyManager;
+
+public class LoginServer extends Thread {
+	
+	@Override
+	public void run() {
+		int loginPort = PropertyManager.getInstance().getLoginPort();
+		
+	}
+
+}

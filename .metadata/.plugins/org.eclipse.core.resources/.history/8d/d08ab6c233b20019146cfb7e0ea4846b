@@ -1,0 +1,49 @@
+package org.unibl.etf.util;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
+
+public class PropertyManager {
+	
+	public String getInstanceName() {
+		Properties properties = new Properties();
+        try {
+			properties.load(PropertyManager.getClass().getClassLoader().getResourceAsStream("../properties.properties"));
+			return properties.getProperty("INSTANCE_NAME");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return null;
+	}
+	
+	public static String getDBAddress() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return properties.getProperty("DB_ADDRESS");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return null;
+	}
+	
+	public static String getDateTimeFormat() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return properties.getProperty("DATE_TIME_FORMAT");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return null;
+	}
+
+}

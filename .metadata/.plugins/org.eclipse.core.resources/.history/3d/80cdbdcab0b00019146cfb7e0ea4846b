@@ -1,0 +1,11 @@
+package org.unibl.etf.model;
+
+public class FileTransferData {
+	
+	private User sender;
+	private User receiver;
+	private String fileName;
+	private byte[] fileData;
+	private long seconds;
+
+}

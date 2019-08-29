@@ -1,0 +1,177 @@
+package org.unibl.etf.util;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
+
+public class PropertyManager {
+	
+	private static PropertyManager instance;
+	
+	private PropertyManager() {}
+	
+	public static PropertyManager getInstance() {
+		if(instance == null) {
+			instance = new PropertyManager();
+		}
+		return instance;
+	}
+	
+	public int getSocketPort() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return Integer.parseInt(properties.getProperty("SOCKET_PORT"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return 0;
+	}
+	
+	public int getMonitoringPort() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return Integer.parseInt(properties.getProperty("MONITORING_PORT"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return 0;
+	}
+	
+	public int getReceiverPort() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return Integer.parseInt(properties.getProperty("RECEIVER_PORT"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return 0;
+	}
+	
+	public int getAllMessagesPort() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return Integer.parseInt(properties.getProperty("ALL_MESSAGES_PORT"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return 0;
+	}
+	
+	public int getLoginPort() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return Integer.parseInt(properties.getProperty("LOGIN_PORT"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return 0;
+	}
+	
+	public int getLogoutPort() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return Integer.parseInt(properties.getProperty("LOGOUT_PORT"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return 0;
+	}
+	
+	public int getClientPort() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return Integer.parseInt(properties.getProperty("CLIENT_PORT"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return 0;
+	}
+	
+	public String getKeyStorePath() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return properties.getProperty("KEY_STORE_PATH");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return null;
+	}
+	
+	public String getKeyStorePassword() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return properties.getProperty("KEY_STORE_PASSWORD");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return null;
+	}
+	
+	public String getTrustStorePath() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return properties.getProperty("TRUST_STORE_PATH");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return null;
+	}
+	
+	public String getTrustStorePassword() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return properties.getProperty("TRUST_STORE_PASSWORD");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return null;
+	}
+	
+	public String getMessagesPath() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			return properties.getProperty("MESSAGES_PATH");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        return null;
+	}
+
+}

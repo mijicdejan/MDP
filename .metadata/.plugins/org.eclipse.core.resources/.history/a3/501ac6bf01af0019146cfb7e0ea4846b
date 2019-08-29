@@ -1,0 +1,137 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+import org.json.JSONArray;
+import org.unibl.etf.model.User;
+
+@SuppressWarnings("serial")
+public class MainForm extends JFrame {
+	
+	private static final String BASE_URL = "http://localhost:8080/RestServer/api/users";
+
+	private JPanel contentPane;
+	
+	private JPanel messagePane;
+	private JPanel usersPane;
+	private JScrollPane scrollPane;
+	private JPanel dataPane;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					MainForm frame = new MainForm();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public MainForm() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 0, 800, 700);
+		setTitle("Pocetna");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		initComponents();
+	}
+	
+	private void initComponents() {
+		messagePane = new JPanel();
+		messagePane.setBounds(0, 0, 784, 100);
+		messagePane.setBorder(new LineBorder(Color.BLACK));
+		messagePane.setLayout(null);
+		contentPane.add(messagePane);
+		
+		usersPane = new JPanel();
+		usersPane.setBackground(Color.WHITE);
+		usersPane.setBounds(0, 100, 200, 562);
+		usersPane.setLayout(null);
+		
+		ArrayList<User> users = new ArrayList<>();
+		try {
+			InputStream is = new URL(BASE_URL).openStream();
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+			String jsonText = readAll(rd);
+			JSONArray jsonArray = new JSONArray(jsonText);
+			for(int i = 0; i < jsonArray.length(); i++) {
+				
+			}
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		int size = 14;
+		int x = 20;
+		if(size > 13) {
+			x = 10;
+		}
+		int y = 10;
+		for(int i = 0; i < size; i++) {
+			JButton btn = new JButton("btn " + i);
+			btn.setBorder(new LineBorder(Color.BLACK));
+			btn.setBackground(Color.WHITE);
+			if(i == 0) {
+				btn.setBackground(Color.LIGHT_GRAY);
+			}
+			btn.setBounds(x, y, 160, 30);
+			usersPane.add(btn);
+			y += 40;
+		}
+		usersPane.setPreferredSize(new Dimension(180, y));
+		
+		scrollPane = new JScrollPane(usersPane);
+		scrollPane.setBounds(0, 100, 200, 562);
+		scrollPane.setBorder(new LineBorder(Color.BLACK));
+		contentPane.add(scrollPane);
+		
+		dataPane = new JPanel();
+		dataPane.setBounds(200, 100, 584, 562);
+		dataPane.setBorder(new LineBorder(Color.BLACK));
+		dataPane.setLayout(null);
+		contentPane.add(dataPane);
+	}
+	
+	private String readAll(Reader rd) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		int cp;
+		while ((cp = rd.read()) != -1) {
+			sb.append((char) cp);
+		}
+		return sb.toString();
+	}
+
+}

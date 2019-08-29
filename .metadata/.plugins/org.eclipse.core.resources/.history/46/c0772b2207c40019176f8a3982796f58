@@ -1,0 +1,5 @@
+package org.unibl.etf.server;
+
+public class ServerThread extends Thread {
+
+}

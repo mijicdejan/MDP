@@ -1,0 +1,24 @@
+package org.unibl.etf.multicast;
+
+import org.unibl.etf.util.PropertyManager;
+import org.unibl.etf.view.MainForm;
+
+public class MulticastClient extends Thread {
+	
+	private int PORT;
+	private String ADDRESS;
+	private MainForm mainForm;
+	
+	public MulticastClient(MainForm mainForm) {
+		PORT = PropertyManager.getInstance().getMulticastPort();
+		ADDRESS = PropertyManager.getInstance().getMulticastAddress();
+		this.mainForm = mainForm;
+	}
+	
+	@Override
+	public void run() {
+		super.run();
+		
+	}
+
+}

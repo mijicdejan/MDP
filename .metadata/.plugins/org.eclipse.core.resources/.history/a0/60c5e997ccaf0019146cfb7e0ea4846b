@@ -1,0 +1,55 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
+@SuppressWarnings("serial")
+public class BlockUnblockForm extends JDialog {
+
+	private JPanel contentPane;
+	
+	private JComboBox<String> cmbType;
+	
+	private JTable tblUsers;
+	private DefaultTableModel dtm;
+	private JScrollPane usersScroll;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		try {
+			BlockUnblockForm dialog = new BlockUnblockForm();
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Create the dialog.
+	 */
+	public BlockUnblockForm() {
+		setModalityType(ModalityType.APPLICATION_MODAL);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(412, 236, 376, 228);
+		setBackground(Color.WHITE);
+		setTitle("Promjena stanja korisnika");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBackground(Color.WHITE);
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+	}
+
+}

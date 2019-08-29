@@ -1,0 +1,52 @@
+package org.unibl.etf.util;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.unibl.etf.model.Message;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+
+public class MessagesManager {
+	
+	public void serializeWithGson(ArrayList<Message> messages, File file) {
+		Gson gson = new Gson();
+		try {
+			FileWriter out = new FileWriter(new File(fileName));
+			out.write(gson.toJson(data));
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public ArrayList<String> deserializeWithGson() {
+		ArrayList<String> data = new ArrayList<>();
+		String fileName = PropertyManager.getInstance().getGsonFile();
+		Gson gson = new Gson();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(new File(fileName)));
+			List<String> temp = Arrays.asList(gson.fromJson(br.readLine(), String[].class));
+			for(String s : temp) {
+				data.add(s);
+			}
+			br.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return data;
+	}
+
+}

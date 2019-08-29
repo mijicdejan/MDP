@@ -1,0 +1,18 @@
+package org.unibl.etf.login;
+
+import java.net.ServerSocket;
+
+import javax.net.ssl.SSLServerSocketFactory;
+
+import org.unibl.etf.util.PropertyManager;
+
+public class LoginServer extends Thread {
+	
+	@Override
+	public void run() {
+		int loginPort = PropertyManager.getInstance().getLoginPort();
+		SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+		ServerSocket socket = factory.createServerSocket(loginPort);
+	}
+
+}

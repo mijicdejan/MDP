@@ -1,0 +1,74 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+@SuppressWarnings("serial")
+public class MainForm extends JFrame {
+
+	private JPanel contentPane;
+	
+	private JPanel actionsPane;
+	private JPanel notificationsPane;
+	private JScrollPane notificationsScroll;
+	private JPanel usersPane;
+	private JScrollPane usersScroll;
+	private JPanel messagesPane;
+	private JScrollPane messagesScroll;
+	private JPanel newMessagePane;
+	private JPanel newFilePane;
+	private JPanel filsePane;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					MainForm frame = new MainForm();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public MainForm() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 0, 1000, 700);
+		setLocationRelativeTo(null);
+		setTitle("Glavna");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		initComponents();
+	}
+	
+	private void initComponents() {
+		initActionsPane();
+	}
+	
+	private void initActionsPane() {
+		actionsPane = new JPanel();
+		actionsPane.setBackground(Color.WHITE);
+		actionsPane.setBounds(0, 0, 984, 50);
+		actionsPane.setBorder(new LineBorder(Color.BLACK));
+		actionsPane.setLayout(null);
+		contentPane.add(actionsPane);
+	}
+
+}

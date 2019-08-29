@@ -1,0 +1,98 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.Font;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+@SuppressWarnings("serial")
+public class ChangePasswordForm extends JDialog {
+
+	private JPanel contentPane;
+	
+	private JLabel lblPassword;
+	private JTextField pfPassword;
+	private JLabel lblNewPassword;
+	private JPasswordField pfNewPassword;
+	private JLabel lblNewPasswordConfirm;
+	private JPasswordField pfNewPasswordConfirm;
+	private JButton btnConfirm;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		try {
+			ChangePasswordForm dialog = new ChangePasswordForm();
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Create the dialog.
+	 */
+	public ChangePasswordForm() {
+		setModalityType(ModalityType.APPLICATION_MODAL);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(300, 100, 376, 283);
+		setLocationRelativeTo(null);
+		setBackground(Color.WHITE);
+		setTitle("Promjena lozinke");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBackground(Color.WHITE);
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		initComponents();
+	}
+	
+	private void initComponents() {
+		lblPassword = new JLabel("Lozinka: ");
+		lblPassword.setFont(new Font(lblPassword.getFont().getFontName(), Font.PLAIN, 16));
+		lblPassword.setBounds(30, 20, 300, 25);
+		contentPane.add(lblPassword);
+		
+		pfPassword = new JPasswordField();
+		pfPassword.setBounds(30, 45, 300, 30);
+		contentPane.add(pfPassword);
+		
+		lblNewPassword = new JLabel("Nova lozinka: ");
+		lblNewPassword.setFont(new Font(lblNewPassword.getFont().getFontName(), Font.PLAIN, 16));
+		lblNewPassword.setBounds(30, 75, 300, 25);
+		contentPane.add(lblNewPassword);
+		
+		pfNewPassword = new JPasswordField();
+		pfNewPassword.setBounds(30, 100, 300, 30);
+		contentPane.add(pfNewPassword);
+		
+		lblNewPasswordConfirm = new JLabel("Potvrda nove lozinke: ");
+		lblNewPasswordConfirm.setFont(new Font(lblNewPasswordConfirm.getFont().getFontName(), Font.PLAIN, 16));
+		lblNewPasswordConfirm.setBounds(30, 130, 300, 25);
+		contentPane.add(lblNewPasswordConfirm);
+		
+		pfNewPasswordConfirm = new JPasswordField();
+		pfNewPasswordConfirm.setBounds(30, 155, 300, 30);
+		contentPane.add(pfNewPasswordConfirm);
+		
+		btnConfirm = new JButton("Potvrdi");
+		btnConfirm.setBackground(Color.WHITE);
+		btnConfirm.setFont(new Font(btnConfirm.getFont().getFontName(), Font.PLAIN, 14));
+		btnConfirm.setBounds(230, 195, 100, 30);
+		btnConfirm.setBorder(new LineBorder(Color.BLACK));
+		contentPane.add(btnConfirm);
+	}
+
+}

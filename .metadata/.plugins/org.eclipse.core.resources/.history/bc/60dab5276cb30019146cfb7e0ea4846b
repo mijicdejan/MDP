@@ -1,0 +1,61 @@
+package org.unibl.etf.util;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+
+public class SerializationManager {
+	
+private static SerializationManager instance;
+	
+	private SerializationManager() {}
+	
+	public static SerializationManager getInstance() {
+		if(instance == null) {
+			instance = new SerializationManager();
+		}
+		return instance;
+	}
+	
+	public void serializeWithJava(ArrayList<String> data) {
+		String fileName = PropertyManager.getInstance().getJavaFile();
+		try {
+			FileOutputStream fos = new FileOutputStream(fileName);
+			ObjectOutputStream oos = new ObjectOutputStream(fos);
+			oos.writeObject(data);
+			oos.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public ArrayList<String> deserializeWithJava() {
+		ArrayList<String> data = new ArrayList<>();
+		String fileName = PropertyManager.getInstance().getJavaFile();
+		try {
+			FileInputStream fis = new FileInputStream(fileName);
+			ObjectInputStream ois = new ObjectInputStream(fis);
+			data = (ArrayList<String>) ois.readObject();
+			ois.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return data;
+	}
+	
+	public void serializeWithGson(ArrayList<String> data) {
+		String fileName = PropertyManager.getInstance().getGsonFile();
+	}
+
+}

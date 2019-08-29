@@ -1,0 +1,7 @@
+package org.unibl.etf.rmi;
+
+import java.rmi.Remote;
+
+public interface FilesInterface extends Remote {
+
+}

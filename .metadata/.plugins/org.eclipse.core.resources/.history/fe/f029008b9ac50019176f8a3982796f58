@@ -1,0 +1,47 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.Toolkit;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
+@SuppressWarnings("serial")
+public class MonitoringForm extends JDialog {
+
+	private JPanel contentPane;
+	
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
+
+	/**
+	 * Create the dialog.
+	 */
+	public MonitoringForm(ObjectInputStream in, ObjectOutputStream out) {
+		this.in = in;
+		this.out = out;
+		
+		setModalityType(ModalityType.APPLICATION_MODAL);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//		setBounds(412, 236, 376, 228);
+		setSize(Toolkit.getDefaultToolkit().getScreenSize());
+		setLocationRelativeTo(null);
+		setBackground(Color.WHITE);
+		setTitle("Monitoring");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBackground(Color.WHITE);
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+	}
+	
+	private void startMonitoring() {
+		
+	}
+
+}

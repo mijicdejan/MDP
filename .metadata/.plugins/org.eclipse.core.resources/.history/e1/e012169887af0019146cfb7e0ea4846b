@@ -1,0 +1,11 @@
+package org.unibl.etf.api;
+
+import org.unibl.etf.model.User;
+
+public class AccountsApi {
+	
+	public User createAccount() {
+		
+	}
+
+}

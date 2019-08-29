@@ -1,0 +1,14 @@
+127.0.0.1 - - [21/Aug/2019:17:16:46 +0200] "POST /RestServer/api/users/login HTTP/1.1" 200 5433
+127.0.0.1 - - [21/Aug/2019:17:16:47 +0200] "GET /RestServer/api/users HTTP/1.1" 200 1247
+127.0.0.1 - - [21/Aug/2019:17:16:53 +0200] "POST /RestServer/api/users/logout HTTP/1.1" 200 -
+127.0.0.1 - - [21/Aug/2019:17:17:03 +0200] "POST /RestServer/api/users/login HTTP/1.1" 200 5506
+127.0.0.1 - - [21/Aug/2019:17:17:03 +0200] "GET /RestServer/api/users HTTP/1.1" 200 1247
+127.0.0.1 - - [21/Aug/2019:17:17:08 +0200] "POST /RestServer/api/users/logout HTTP/1.1" 200 -
+127.0.0.1 - - [21/Aug/2019:17:17:33 +0200] "POST /RestServer/api/users/login HTTP/1.1" 200 5579
+127.0.0.1 - - [21/Aug/2019:17:17:34 +0200] "GET /RestServer/api/users HTTP/1.1" 200 1247
+127.0.0.1 - - [21/Aug/2019:17:17:38 +0200] "POST /RestServer/api/users/logout HTTP/1.1" 200 -
+127.0.0.1 - - [21/Aug/2019:17:21:34 +0200] "POST /RestServer/api/users/login HTTP/1.1" 200 5652
+127.0.0.1 - - [21/Aug/2019:17:21:35 +0200] "GET /RestServer/api/users HTTP/1.1" 200 1247
+127.0.0.1 - - [21/Aug/2019:17:24:09 +0200] "POST /RestServer/api/users/login HTTP/1.1" 200 5652
+127.0.0.1 - - [21/Aug/2019:17:24:10 +0200] "GET /RestServer/api/users HTTP/1.1" 200 1247
+127.0.0.1 - - [21/Aug/2019:17:24:22 +0200] "POST /RestServer/api/users/logout HTTP/1.1" 200 -

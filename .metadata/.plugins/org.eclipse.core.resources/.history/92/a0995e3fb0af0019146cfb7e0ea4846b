@@ -1,0 +1,74 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.Font;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
+import org.unibl.etf.model.User;
+
+@SuppressWarnings("serial")
+public class NewUserInfoForm extends JDialog {
+	
+	private User user;
+
+	private JPanel contentPane;
+	
+	private JLabel lblUsername;
+	private JLabel lblUsernameValue;
+	private JLabel lblPassword;
+	private JLabel lblPasswordValue;
+	private JButton btnClose;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		try {
+			NewUserInfoForm dialog = new NewUserInfoForm(new User(false, "", "", "123456", null, "aleksandar.aleksandrijevic"));
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Create the dialog.
+	 */
+	public NewUserInfoForm(User user) {
+		this.user = user;
+		
+		setModalityType(ModalityType.APPLICATION_MODAL);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(412, 236, 376, 228);
+		setBackground(Color.WHITE);
+		setTitle("Novi korisnik");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBackground(Color.WHITE);
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		initComponents();
+	}
+	
+	private void initComponents() {
+		lblUsername = new JLabel("Korisničko ime: ");
+		lblUsername.setFont(new Font(lblUsername.getFont().getFontName(), Font.PLAIN, 14));
+		lblUsername.setBounds(30, 20, 300, 25);
+		contentPane.add(lblUsername);
+		
+		lblUsernameValue = new JLabel(user.getUsername());
+		lblUsernameValue.setFont(new Font(lblUsername.getFont().getFontName(), Font.PLAIN, 16));
+		lblUsernameValue.setBounds(160, 20, 300, 25);
+		contentPane.add(lblUsernameValue);
+	}
+
+}

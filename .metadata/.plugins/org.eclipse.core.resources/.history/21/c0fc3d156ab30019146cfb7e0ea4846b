@@ -1,0 +1,7 @@
+USERS_BASE_URL=http://localhost:8080/RestServer/api/users
+DATE_TIME_FORMAT=dd.MM.yyyy. HH:mm:ss
+SESSION_DURATION_FORMAT=HH:mm:ss
+POLICY_PATH=resources
+MULTICAST_PORT=20000
+MULTICAST_ADDRESS=224.0.0.11
+NOTIFICATION_NUMBER_FILE=resources/notification_number.txt

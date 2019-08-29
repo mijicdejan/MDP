@@ -1,0 +1,82 @@
+package org.unibl.etf.main;
+
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.unibl.etf.login.LoginServer;
+import org.unibl.etf.logout.LogoutServer;
+import org.unibl.etf.messages.AllMessagesServer;
+import org.unibl.etf.model.User;
+import org.unibl.etf.receiver.ReceiverServer;
+import org.unibl.etf.server.SocketServer;
+import org.unibl.etf.util.PropertyManager;
+
+public class Main {
+	
+	private static HashMap<User, InetAddress> loggedInUsers = new HashMap<>();
+	private static HashMap<String, ObjectOutputStream> users = new HashMap<>();
+
+	public static void main(String[] args) {
+		String keyStorePath = PropertyManager.getInstance().getKeyStorePath();
+		String keyStorePassword = PropertyManager.getInstance().getKeyStorePassword();
+		String trustStorePath = PropertyManager.getInstance().getTrustStorePath();
+		String trustStorePassword = PropertyManager.getInstance().getTrustStorePassword();
+		
+		System.setProperty("javax.net.ssl.keyStore", keyStorePath);
+		System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword);
+		System.setProperty("javax.net.ssl.trustStore", trustStorePath);
+		System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
+		
+		System.out.println("Properties set");
+//		new LoginServer().start();
+//		new LogoutServer().start();
+//		new ReceiverServer().start();
+//		new AllMessagesServer().start();
+		new SocketServer().start();
+		System.out.println("Servers started");
+	}
+	
+	public static void addUser(User user, InetAddress address) {
+		loggedInUsers.put(user, address);
+	}
+	
+	public static void removeUser(User user) {
+		loggedInUsers.remove(user);
+	}
+	
+	public static boolean isLoggedIn(User user) {
+		return loggedInUsers.containsKey(user);
+	}
+	
+	public static InetAddress getAddress(User user) {
+		return loggedInUsers.get(user);
+	}
+	
+	public static void userLoggedIn(String username, ObjectOutputStream out) {
+		users.put(username, out);
+	}
+	
+	public static void userLoggedOut(String username) {
+		users.remove(username);
+	}
+	
+	public static boolean isUserLoggedIn(String username) {
+		return users.containsKey(username);
+	}
+	
+	public static ObjectOutputStream getOutputStream(String username) {
+		return users.get(username);
+	}
+	
+	public static ArrayList<ObjectOutputStream> getAllActiveStreams() {
+		ArrayList<ObjectOutputStream> list = new ArrayList<>();
+		for(Map.Entry<String, ObjectOutputStream> entry : users.entrySet()) {
+			list.add(entry.getValue());
+		}
+		return list;
+	}
+
+}

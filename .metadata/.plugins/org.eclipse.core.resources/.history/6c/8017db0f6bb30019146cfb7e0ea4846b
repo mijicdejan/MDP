@@ -1,0 +1,22 @@
+package org.unibl.etf.util;
+
+import java.util.ArrayList;
+
+public class SerializationManager {
+	
+private static SerializationManager instance;
+	
+	private SerializationManager() {}
+	
+	public static SerializationManager getInstance() {
+		if(instance == null) {
+			instance = new SerializationManager();
+		}
+		return instance;
+	}
+	
+	public void serializeWithJava(ArrayList<String> data) {
+		
+	}
+
+}

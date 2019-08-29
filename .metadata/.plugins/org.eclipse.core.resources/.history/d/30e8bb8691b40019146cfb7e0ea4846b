@@ -1,0 +1,5 @@
+package org.unibl.etf.logout;
+
+public class LogoutServer {
+
+}

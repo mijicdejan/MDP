@@ -1,0 +1,7 @@
+SOCKET_PORT=8443
+MONITORING_PORT=8444
+MESSAGES_PATH=messages
+KEY_STORE_PATH=C:/Users/PC/Desktop/keystore.jks
+KEY_STORE_PASSWORD=securemdp
+TRUST_STORE_PATH=C:/Users/PC/Desktop/truststore.jks
+TRUST_STORE_PASSWORD=securemdp

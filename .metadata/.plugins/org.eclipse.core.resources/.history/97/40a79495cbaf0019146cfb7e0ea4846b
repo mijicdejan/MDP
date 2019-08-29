@@ -1,0 +1,5 @@
+package org.unibl.etf.view;
+
+public class BlockUnblockForm {
+
+}

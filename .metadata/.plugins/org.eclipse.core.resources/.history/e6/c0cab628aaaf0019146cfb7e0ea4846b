@@ -1,0 +1,74 @@
+package org.unibl.etf.view;
+
+import java.awt.Font;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+
+@SuppressWarnings("serial")
+public class NewUserForm extends JDialog {
+
+	private JPanel contentPane;
+	
+	private JLabel lblFirstName;
+	private JTextField tfFirstName;
+	private JLabel lblLastName;
+	private JTextField tfLastName;
+	private JButton btnSave;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		try {
+			NewUserForm dialog = new NewUserForm();
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Create the dialog.
+	 */
+	public NewUserForm() {
+		setModalityType(ModalityType.APPLICATION_MODAL);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(100, 0, 400, 700);
+		setTitle("Novi korisnik");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		initComponents();
+	}
+	
+	private void initComponents() {
+		lblFirstName = new JLabel("Ime: ");
+		lblFirstName.setFont(new Font(lblFirstName.getFont().getFontName(), Font.BOLD, 18));
+		lblFirstName.setBounds(50, 20, 300, 25);
+		contentPane.add(lblFirstName);
+		
+		tfFirstName = new JTextField();
+		tfFirstName.setBounds(50, 50, 300, 30);
+		contentPane.add(tfFirstName);
+		
+		lblLastName = new JLabel("Prezime: ");
+		lblLastName.setFont(new Font(lblLastName.getFont().getFontName(), Font.PLAIN, 16));
+		lblLastName.setBounds(50, 90, 300, 25);
+		contentPane.add(lblLastName);
+		
+		tfLastName = new JTextField();
+		tfLastName.setBounds(50, 120, 300, 30);
+		contentPane.add(tfLastName);
+	}
+
+}

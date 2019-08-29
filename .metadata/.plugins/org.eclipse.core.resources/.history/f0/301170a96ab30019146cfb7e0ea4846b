@@ -1,0 +1,16 @@
+package org.unibl.etf.util;
+
+public class SerializationManager {
+	
+private static PropertyManager instance;
+	
+	private PropertyManager() {}
+	
+	public static PropertyManager getInstance() {
+		if(instance == null) {
+			instance = new PropertyManager();
+		}
+		return instance;
+	}
+
+}

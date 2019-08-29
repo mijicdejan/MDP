@@ -1,0 +1,63 @@
+package org.unibl.etf.monitoring;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+
+import org.unibl.etf.model.Message;
+import org.unibl.etf.model.User;
+import org.unibl.etf.view.MainForm;
+
+public class MonitoringThread extends Thread {
+	
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
+	
+	private boolean loggedIn;
+	
+	public MonitoringThread(ObjectInputStream in, ObjectOutputStream out) {
+		this.in = in;
+		this.out = out;
+		loggedIn = true;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void run() {
+		try {
+			while(loggedIn) {
+				String responseType = (String) in.readObject();
+				if("END".equals(responseType)) {
+					loggedIn = false;
+				} else if("ALL_MESSAGES".equals(responseType)) {
+					ArrayList<Message> messages = (ArrayList<Message>) in.readObject();
+					mainForm.setMessages(messages);
+				} else if("USER".equals(responseType)) {
+					User user = (User) in.readObject();
+					User clickedUser = mainForm.getClickedUser();
+					if(clickedUser != null && clickedUser.getUsername().equals(user.getUsername())) {
+						mainForm.getAllMessages();
+					} else {
+						mainForm.colorButton(user);
+					}
+				} else if("ALL_GROUP_MESSAGES".equals(responseType)) {
+					ArrayList<Message> messages = (ArrayList<Message>) in.readObject();
+					mainForm.setMessages(messages);
+				} else if("NEW_GROUP_MESSAGE".equals(responseType)) {
+					User clickedUser = mainForm.getClickedUser();
+					if(clickedUser == null) {
+						mainForm.getAllGroupMessages();
+					} else {
+						mainForm.colorGroupButton();
+					}
+				}
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

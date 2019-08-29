@@ -1,0 +1,192 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Map;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.unibl.etf.model.Session;
+import org.unibl.etf.model.User;
+
+import com.google.gson.Gson;
+
+@SuppressWarnings("serial")
+public class MainForm extends JFrame {
+
+	private JPanel contentPane;
+	
+	private JPanel actionsPane;
+	private JPanel notificationsPane;
+	private JScrollPane notificationsScroll;
+	private JPanel usersPane;
+	private JScrollPane usersScroll;
+	private JPanel messagesPane;
+	private JScrollPane messagesScroll;
+	private JPanel newMessagePane;
+	private JPanel newFilePane;
+	private JPanel filsePane;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					MainForm frame = new MainForm();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public MainForm() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 0, 1000, 700);
+		setLocationRelativeTo(null);
+		setTitle("Glavna");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		initComponents();
+	}
+	
+	private void initComponents() {
+		initActionsPane();
+		initUsersPane();
+	}
+	
+	private void initActionsPane() {
+		actionsPane = new JPanel();
+		actionsPane.setBackground(Color.WHITE);
+		actionsPane.setBounds(0, 0, 984, 50);
+		actionsPane.setBorder(new LineBorder(Color.BLACK));
+		actionsPane.setLayout(null);
+		contentPane.add(actionsPane);
+	}
+	
+	private void initUsersPane() {
+		@SuppressWarnings("unchecked")
+		public void initUsersPane() {
+			try {
+				contentPane.remove(usersScroll);
+				contentPane.repaint();
+				contentPane.revalidate();
+			} catch (Exception e) {}
+			
+			usersPane = new JPanel();
+			usersPane.setBackground(Color.WHITE);
+			usersPane.setBounds(0, 100, 200, 562);
+			usersPane.setLayout(null);
+			
+			users = new ArrayList<>();
+			try {
+				InputStream is = new URL(BASE_URL).openStream();
+				BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+				String jsonText = readAll(rd);
+				JSONArray jsonArray = new JSONArray(jsonText);
+				for(int i = 0; i < jsonArray.length(); i++) {
+					JSONObject jsonObject = jsonArray.getJSONObject(i);
+					User user = new Gson().fromJson(jsonObject.toString(), User.class);
+					users.add(user);
+				}
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			users.sort(Comparator.comparing(User::getFirstName).thenComparing(User::getLastName).thenComparing(User::getUsername));
+			int size = users.size();
+			int x = 20;
+			if(size > 13) {
+				x = 10;
+			}
+			int y = 10;
+			System.out.println("===========================");
+			for(int i = 0; i < size; i++) {
+				User user = users.get(i);
+				System.out.println(user.getUsername());
+				JButton btn = new JButton(user.getFirstName() + " " + user.getLastName());
+				btn.setBorder(new LineBorder(Color.BLACK));
+				btn.setBackground(Color.WHITE);
+				btn.setToolTipText(user.getFirstName() + " " + user.getLastName() + "(" + user.getUsername() + ")");
+				if(i == 0) {
+					btn.setBackground(Color.LIGHT_GRAY);
+					pressedButton = btn;
+					try {
+						InputStream is = new URL(BASE_URL + "/" + user.getUsername()).openStream();
+						BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+						String jsonText = readAll(rd);
+						JSONObject jsonObject = new JSONObject(jsonText);
+						Map<String, String> sessions = new Gson().fromJson(jsonObject.toString(), Map.class);
+						ArrayList<Session> sessionsList = new ArrayList<>();
+						for(Map.Entry<String, String> entry : sessions.entrySet()) {
+							sessionsList.add(new Session(entry.getValue(), entry.getKey()));
+						}
+						user.setSessions(sessionsList.toArray(new Session[sessionsList.size()]));
+						initDataTable(user);
+						boolean enable = false;
+						for(Session s : sessionsList) {
+							if("0".equals(s.getLogoutTime())) {
+								enable = true;
+							}
+						}
+						btnMonitoring.setEnabled(enable);
+					} catch (MalformedURLException ex) {
+						ex.printStackTrace();
+					} catch (IOException ex) {
+						ex.printStackTrace();
+					}
+				}
+				btn.setBounds(x, y, 160, 30);
+				btn.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						btnClickedAction(e);
+					}
+				});
+				buttons.put(btn, user);
+				usersPane.add(btn);
+				y += 40;
+			}
+			usersPane.setPreferredSize(new Dimension(180, y));
+			
+			usersScroll = new JScrollPane(usersPane);
+			usersScroll.setBounds(0, 100, 200, 562);
+			usersScroll.setBorder(new LineBorder(Color.BLACK));
+			usersScroll.repaint();
+			usersScroll.revalidate();
+			contentPane.add(usersScroll);
+		}
+	}
+
+}

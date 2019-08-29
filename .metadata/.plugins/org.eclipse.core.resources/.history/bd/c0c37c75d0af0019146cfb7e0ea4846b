@@ -1,0 +1,107 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
+import org.unibl.etf.model.Session;
+import org.unibl.etf.model.User;
+
+@SuppressWarnings("serial")
+public class BlockUnblockForm extends JDialog {
+	
+	private ArrayList<User> activeUsers;
+	private ArrayList<User> blockedUsers;
+
+	private JPanel contentPane;
+	
+	private JComboBox<String> cmbType;
+	
+	private JTable tblUsers;
+	private DefaultTableModel dtm;
+	private JScrollPane usersScroll;
+	
+	private JButton btnBlock;
+	private JButton btnUnblock;
+
+	/**
+	 * Create the dialog.
+	 */
+	public BlockUnblockForm(ArrayList<User> users) {
+		activeUsers = new ArrayList<>();
+		blockedUsers = new ArrayList<>();
+		for(User user : users) {
+			if(user.isBlocked()) {
+				blockedUsers.add(user);
+			} else {
+				activeUsers.add(user);
+			}
+		}
+		
+		setModalityType(ModalityType.APPLICATION_MODAL);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(412, 236, 376, 228);
+		setBackground(Color.WHITE);
+		setTitle("Promjena stanja korisnika");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBackground(Color.WHITE);
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		initComponents();
+	}
+	
+	private void initComponents() {
+		cmbType = new JComboBox<>();
+		cmbType.setBackground(Color.WHITE);
+		cmbType.setForeground(Color.BLACK);
+		cmbType.setBounds(30, 10, 300, 30);
+		cmbType.addItem("Aktivni");
+		cmbType.addItem("Blokirani");
+		contentPane.add(cmbType);
+		
+		
+	}
+	
+	private void initUsersTable(String type) {
+		dtm = new DefaultTableModel();
+		dtm.addColumn("Ime");
+		dtm.addColumn("Prezime");
+		dtm.addColumn("Korisničko ime");
+		
+		if("active".equals(type)) {
+			for(User user : activeUsers) {
+				
+			}
+		} else {
+			
+		}
+		
+		tblUsers = new JTable(dtm);
+		tblUsers.setAutoCreateRowSorter(true);
+		tblUsers.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tblUsers.setBackground(Color.WHITE);
+		
+		usersScroll = new JScrollPane(tblUsers);
+		usersScroll.setBounds(10, 10, 764, 502);
+		contentPane.add(usersScroll);
+	}
+
+}

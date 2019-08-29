@@ -1,0 +1,5 @@
+package org.unibl.etf.messages;
+
+public class AllMessagesThread {
+
+}

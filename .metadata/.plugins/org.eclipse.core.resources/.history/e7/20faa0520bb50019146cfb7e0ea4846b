@@ -1,0 +1,33 @@
+package org.unibl.etf.main;
+
+import java.net.InetAddress;
+import java.util.HashMap;
+
+import org.unibl.etf.model.User;
+import org.unibl.etf.util.PropertyManager;
+
+public class Main {
+	
+	private static HashMap<User, InetAddress> loggedInUsers = new HashMap<>();
+
+	public static void main(String[] args) {
+		String keyStorePath = PropertyManager.getInstance().getKeyStorePath();
+		String keyStorePassword = PropertyManager.getInstance().getKeyStorePassword();
+		String trustStorePath = PropertyManager.getInstance().getTrustStorePath();
+		String trustStorePassword = PropertyManager.getInstance().getTrustStorePassword();
+		
+		System.setProperty("javax.net.ssl.keyStore", keyStorePath);
+		System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword);
+		System.setProperty("javax.net.ssl.trustStore", trustStorePath);
+		System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
+	}
+	
+	public static void addUser(User user, InetAddress address) {
+		loggedInUsers.put(user, address);
+	}
+	
+	public static void removeUser(User user) {
+		loggedInUsers.remove(user);
+	}
+
+}

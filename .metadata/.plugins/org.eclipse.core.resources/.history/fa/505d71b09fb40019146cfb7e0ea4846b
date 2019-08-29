@@ -1,0 +1,19 @@
+package org.unibl.etf.messages;
+
+public class Snippet {
+	@Override
+		public void run() {
+			int loginPort = PropertyManager.getInstance().getLoginPort();
+			SSLServerSocketFactory factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+			try {
+				ServerSocket socket = factory.createServerSocket(loginPort);
+				while(true) {
+					SSLSocket s = (SSLSocket) socket.accept();
+					new LoginThread(s).start();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+}
+

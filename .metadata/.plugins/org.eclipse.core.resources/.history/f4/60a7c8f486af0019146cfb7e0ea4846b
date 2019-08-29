@@ -1,0 +1,17 @@
+package org.unibl.etf.service;
+
+import org.unibl.etf.model.User;
+
+public class AccountsService {
+	
+	public static User createAccount(String firstName, String lastName) {
+		String username = generateUsername(firstName, lastName);
+		
+		User user = new User(firstName, lastName, username, password);
+	}
+	
+	private static String generateUsername(String firstName, String lastName) {
+		return firstName.toLowerCase() + "." + lastName.toLowerCase();
+	}
+
+}

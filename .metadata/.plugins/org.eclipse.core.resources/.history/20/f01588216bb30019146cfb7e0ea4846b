@@ -1,0 +1,32 @@
+package org.unibl.etf.util;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+
+public class SerializationManager {
+	
+private static SerializationManager instance;
+	
+	private SerializationManager() {}
+	
+	public static SerializationManager getInstance() {
+		if(instance == null) {
+			instance = new SerializationManager();
+		}
+		return instance;
+	}
+	
+	public void serializeWithJava(ArrayList<String> data) {
+		String fileName = PropertyManager.getInstance().getJavaFile();
+		try {
+			FileOutputStream fos = new FileOutputStream(fileName);
+			ObjectOutputStream oos = new ObjectOutputStream(fos);
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

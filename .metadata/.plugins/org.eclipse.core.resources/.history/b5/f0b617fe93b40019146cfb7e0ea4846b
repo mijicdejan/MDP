@@ -1,0 +1,18 @@
+package org.unibl.etf.model;
+
+import java.time.LocalDateTime;
+
+public class Message {
+	
+	private User sender;
+	private User receiver;
+	private String message;
+	private LocalDateTime time;
+	
+	public Message() {
+		super();
+	}
+	
+	
+
+}

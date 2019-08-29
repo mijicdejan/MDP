@@ -1,0 +1,84 @@
+package org.unibl.etf.monitoring;
+
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import javax.imageio.ImageIO;
+import javax.net.ssl.SSLSocket;
+
+import org.unibl.etf.main.Main;
+
+public class MonitoringAdminThread extends Thread {
+	
+	private ObjectOutputStream out;
+	private ObjectInputStream in;
+	
+	private boolean active;
+	private boolean monitoring;
+	
+	public MonitoringAdminThread(SSLSocket socket) {
+		try {
+			out = new ObjectOutputStream(socket.getOutputStream());
+			in = new ObjectInputStream(socket.getInputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		active = true;
+		monitoring = false;
+	}
+	
+	@Override
+	public void run() {
+		System.out.println("Run admin thread");
+		try {
+			while(active) {
+				String requestType = (String) in.readObject();
+				if("END".equals(requestType)) {
+					active = false;
+				} else if("MONITORING".equals(requestType)) {
+					String username = (String) in.readObject();
+					ObjectInputStream userIn = Main.getMonitorIn(username);
+					ObjectOutputStream userOut = Main.getMonitorOut(username);
+					userOut.writeObject("MONITORING");
+					userOut.flush();
+					monitoring = true;
+					listenForEnd();
+					while(monitoring) {
+						BufferedImage image = ImageIO.read(userIn);
+						if(image != null) {
+							ImageIO.write(image, "png", out);
+							out.flush();
+						} else {
+							System.out.println("null");
+						}
+					}
+					userOut.writeObject("END_MONITORING");
+					userOut.flush();
+				}
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void listenForEnd() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					while(!"END_MONITORING".equals((String) in.readObject()));
+					monitoring = false;
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+
+}

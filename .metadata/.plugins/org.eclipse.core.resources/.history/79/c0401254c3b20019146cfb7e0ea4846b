@@ -1,0 +1,5 @@
+package org.unibl.etf.multicast;
+
+public class MulticastClient extends Thread {
+
+}

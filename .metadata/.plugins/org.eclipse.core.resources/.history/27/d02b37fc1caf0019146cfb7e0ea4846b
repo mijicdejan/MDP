@@ -1,0 +1,292 @@
+package org.unibl.etf.view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.unibl.etf.model.User;
+
+import com.google.gson.Gson;
+
+@SuppressWarnings("serial")
+public class MainForm extends JFrame {
+	
+	private static final String BASE_URL = "http://localhost:8080/RestServer/api/users";
+	private HashMap<JButton, User> buttons;
+	private JButton pressedButton;
+
+	private JPanel contentPane;
+	
+	private JPanel messagePane;
+	private JPanel usersPane;
+	private JScrollPane usersScroll;
+	private JPanel dataPane;
+	
+	private JTextArea taMessage;
+	private JScrollPane messageScroll;
+	private JButton btnSend;
+	
+	private JTable tblData;
+	private DefaultTableModel dtm;
+	private JScrollPane dataScroll;
+	
+	private JButton btnMonitoring;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					MainForm frame = new MainForm();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the frame.
+	 */
+	public MainForm() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 0, 1000, 700);
+		setTitle("Pocetna");
+		setResizable(false);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(null);
+		setContentPane(contentPane);
+		
+		buttons = new HashMap<>();
+		
+		initComponents();
+	}
+	
+	private void initComponents() {
+		initMessagesPane();
+		initDataPane();
+		initUsersPane();
+	}
+	
+	private void initMessagesPane() {
+		taMessage = new JTextArea();
+		taMessage.setBounds(10, 10, 854, 80);
+		
+		messageScroll = new JScrollPane(taMessage);
+		messageScroll.setBounds(10, 10, 854, 80);
+		messageScroll.setBorder(new LineBorder(Color.BLACK));
+		
+		btnSend = new JButton("Pošalji");
+		btnSend.setBackground(Color.WHITE);
+		btnSend.setBounds(874, 35, 100, 30);
+		btnSend.setBorder(new LineBorder(Color.BLACK));
+		
+		messagePane = new JPanel();
+		messagePane.setBackground(Color.WHITE);
+		messagePane.setBounds(0, 0, 984, 100);
+		messagePane.setBorder(new LineBorder(Color.BLACK));
+		messagePane.setLayout(null);
+		
+		messagePane.add(messageScroll);
+		messagePane.add(btnSend);
+		contentPane.add(messagePane);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void initUsersPane() {
+		usersPane = new JPanel();
+		usersPane.setBackground(Color.WHITE);
+		usersPane.setBounds(0, 100, 200, 562);
+		usersPane.setLayout(null);
+		
+		ArrayList<User> users = new ArrayList<>();
+		try {
+			InputStream is = new URL(BASE_URL).openStream();
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+			String jsonText = readAll(rd);
+			JSONArray jsonArray = new JSONArray(jsonText);
+			for(int i = 0; i < jsonArray.length(); i++) {
+				JSONObject jsonObject = jsonArray.getJSONObject(i);
+				User user = new Gson().fromJson(jsonObject.toString(), User.class);
+				users.add(user);
+			}
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		users.sort(Comparator.comparing(User::getFirstName));
+		int size = users.size();
+		int x = 20;
+		if(size > 13) {
+			x = 10;
+		}
+		int y = 10;
+		for(int i = 0; i < size; i++) {
+			User user = users.get(i);
+			JButton btn = new JButton(user.getFirstName() + " " + user.getLastName());
+			btn.setBorder(new LineBorder(Color.BLACK));
+			btn.setBackground(Color.WHITE);
+			if(i == 0) {
+				btn.setBackground(Color.LIGHT_GRAY);
+				pressedButton = btn;
+				try {
+					InputStream is = new URL(BASE_URL + "/" + user.getUsername()).openStream();
+					BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+					String jsonText = readAll(rd);
+					JSONObject jsonObject = new JSONObject(jsonText);
+					Map<String, String> sessions = new Gson().fromJson(jsonObject.toString(), Map.class);
+					user.setSessions(new HashMap<>(sessions));
+					initDataTable(user);
+				} catch (MalformedURLException ex) {
+					ex.printStackTrace();
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				}
+			}
+			btn.setBounds(x, y, 160, 30);
+			btn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					btnPressedAction(e);
+				}
+			});
+			buttons.put(btn, user);
+			usersPane.add(btn);
+			y += 40;
+		}
+		usersPane.setPreferredSize(new Dimension(180, y));
+		
+		usersScroll = new JScrollPane(usersPane);
+		usersScroll.setBounds(0, 100, 200, 562);
+		usersScroll.setBorder(new LineBorder(Color.BLACK));
+		contentPane.add(usersScroll);
+	}
+	
+	private void initDataPane() {
+		btnMonitoring = new JButton("Monitoring");
+		btnMonitoring.setBackground(Color.WHITE);
+		btnMonitoring.setBounds(674, 522, 100, 30);
+		btnMonitoring.setBorder(new LineBorder(Color.BLACK));
+		
+		dataPane = new JPanel();
+		dataPane.setBackground(Color.WHITE);
+		dataPane.setBounds(200, 100, 784, 562);
+		dataPane.setBorder(new LineBorder(Color.BLACK));
+		dataPane.setLayout(null);
+		
+		dataPane.add(btnMonitoring);
+		contentPane.add(dataPane);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void btnPressedAction(ActionEvent e) {
+		JButton btn = (JButton)e.getSource();
+		pressedButton.setBackground(Color.WHITE);
+		btn.setBackground(Color.LIGHT_GRAY);
+		pressedButton = btn;
+		User user = buttons.get(btn);
+		try {
+			InputStream is = new URL(BASE_URL + "/" + user.getUsername()).openStream();
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+			String jsonText = readAll(rd);
+			JSONObject jsonObject = new JSONObject(jsonText);
+			Map<String, String> sessions = new Gson().fromJson(jsonObject.toString(), Map.class);
+			user.setSessions(new HashMap<>(sessions));
+			initDataTable(user);
+		} catch (MalformedURLException ex) {
+			ex.printStackTrace();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private void initDataTable(User user) {
+		dtm = new DefaultTableModel();
+		dtm.addColumn("Vrijeme prijave");
+		dtm.addColumn("Vrijeme odjave");
+		dtm.addColumn("Trajanje sesije");
+		
+		HashMap<String, String> sessions = user.getSessions();
+		
+		LocalDateTime now = LocalDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy. HH:mm:ss");
+		List<Map.Entry<String, String>> list = new LinkedList<Map.Entry<String, String>>(sessions.entrySet());
+		Collections.sort(list, new Comparator<Map.Entry<String, String> >() {
+			public int compare(Map.Entry<String, String> o1, Map.Entry<String, String> o2) {
+				LocalDateTime ldt1 = LocalDateTime.parse(o1.getValue(), formatter);
+				LocalDateTime ldt2 = LocalDateTime.parse(o2.getValue(), formatter);
+				long seconds1 = ChronoUnit.SECONDS.between(ldt1, now);
+				long seconds2 = ChronoUnit.SECONDS.between(ldt2, now);
+				return (seconds1).compareTo(seconds2);
+			}
+		}); 
+		
+		for(Map.Entry<String, String> entry : sessions.entrySet()) {
+			LocalDateTime start = LocalDateTime.parse(entry.getValue(), formatter);
+			LocalDateTime end = LocalDateTime.parse(entry.getKey(), formatter);
+			long seconds = ChronoUnit.SECONDS.between(start, end);
+			Object[] rowData = { entry.getValue(), entry.getKey(), seconds / 3600 + ":" + (seconds % 3600) / 60 + ":" + (seconds % 3600) % 60 };
+			dtm.addRow(rowData);
+		}
+		
+		tblData = new JTable(dtm);
+		tblData.setAutoCreateRowSorter(true);
+		//tblData.setFont(new Font("Century Gothic", Font.BOLD, 12));
+		tblData.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		//tblData.setForeground(new Color(0, 0, 139));
+		tblData.setBackground(Color.WHITE);
+		
+		dataScroll = new JScrollPane(tblData);
+		dataScroll.setBounds(10, 10, 764, 502);
+		dataPane.add(dataScroll);
+	}
+	
+	private String readAll(Reader rd) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		int cp;
+		while ((cp = rd.read()) != -1) {
+			sb.append((char) cp);
+		}
+		return sb.toString();
+	}
+
+}

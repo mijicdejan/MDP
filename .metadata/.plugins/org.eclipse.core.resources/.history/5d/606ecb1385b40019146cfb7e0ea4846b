@@ -1,0 +1,5 @@
+package org.unibl.etf.login;
+
+public class LoginThread extends Thread {
+
+}

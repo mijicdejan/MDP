@@ -1,0 +1,23 @@
+package org.unibl.etf.util;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
+
+public class PropertyManager {
+	
+	public static String getUsersBaseURL() {
+		Properties properties = new Properties();
+        try {
+			properties.load(new FileInputStream("properties.properties"));
+			INSTANCE_NAME = properties.getProperty("INSTANCE_NAME");
+			PATH = properties.getProperty("PATH");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

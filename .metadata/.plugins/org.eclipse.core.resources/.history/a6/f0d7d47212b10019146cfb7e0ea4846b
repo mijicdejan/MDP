@@ -1,0 +1,17 @@
+package org.unibl.etf.rmi;
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+
+import org.unibl.etf.model.FileTransferData;
+
+public interface FilesInterface extends Remote {
+	
+	boolean uploadFile(FileTransferData data) throws RemoteException;
+	
+	ArrayList<FileTransferData> getAllFiles() throws RemoteException;
+	
+	FileTransferData downloadFile(FileTransferData data) throws RemoteException;
+
+}

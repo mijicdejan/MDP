@@ -1,0 +1,34 @@
+package org.unibl.etf.main;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+
+import org.unibl.etf.model.User;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+
+public class Main {
+
+	public static void main(String[] args) {
+ArrayList<User> users = new ArrayList<>();
+		
+		JedisPool pool = new JedisPool();
+		try(Jedis jedis = pool.getResource()) {
+			Set<String> set = jedis.keys(instanceName + ":users" + "*");
+			for(String s : set) {
+				if(s.split(":").length == 3) {
+					Map<String, String> fields = jedis.hgetAll(s);
+					String firstName = fields.get("firstName");
+					String lastName = fields.get("lastName");
+					String username = fields.get("username");
+					boolean blocked = "true".equals(fields.get("blocked"));
+					users.add(new User(firstName, lastName, username, null, blocked, null));
+				}
+			}
+		}
+		pool.close();
+	}
+
+}

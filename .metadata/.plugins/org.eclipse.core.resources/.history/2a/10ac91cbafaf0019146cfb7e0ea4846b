@@ -1,0 +1,9 @@
+eclipse.preferences.version=1
+encoding//src/org/unibl/etf/api/AccountsApi.java=UTF-8
+encoding//src/org/unibl/etf/api/AccountsApiService.java=UTF-8
+encoding//src/org/unibl/etf/api/AccountsApiServiceLocator.java=UTF-8
+encoding//src/org/unibl/etf/api/AccountsApiSoapBindingStub.java=UTF-8
+encoding//src/org/unibl/etf/model/Session.java=UTF-8
+encoding//src/org/unibl/etf/model/User.java=UTF-8
+encoding//src/org/unibl/etf/view/MainForm.java=UTF-8
+encoding//src/org/unibl/etf/view/NewUserForm.java=UTF-8

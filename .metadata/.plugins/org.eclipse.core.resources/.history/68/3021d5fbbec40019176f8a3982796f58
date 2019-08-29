@@ -1,0 +1,52 @@
+package org.unibl.etf.receiver;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
+
+import org.unibl.etf.model.Message;
+import org.unibl.etf.model.User;
+import org.unibl.etf.view.MainForm;
+
+public class ReceiverThread extends Thread {
+	
+	private MainForm mainForm;
+	
+	private ObjectInputStream in;
+	
+	private boolean loggedIn;
+	
+	public ReceiverThread(ObjectInputStream in, MainForm mainForm) {
+		this.mainForm = mainForm;
+		this.in = in;
+		loggedIn = true;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void run() {
+		try {
+			while(loggedIn) {
+				String responseType = (String) in.readObject();
+				if("END".equals(responseType)) {
+					System.out.println(responseType + " : " + mainForm.user.getUsername());
+					loggedIn = false;
+				} else if("ALL_MESSAGES".equals(responseType)) {
+					System.out.println(responseType + " : " + mainForm.user.getUsername());
+					ArrayList<Message> messages = (ArrayList<Message>) in.readObject();
+					mainForm.setMessages(messages);
+				} else if("USER".equals(responseType)) {
+					User user = (User) in.readObject();
+					System.out.println("Pre color");
+					mainForm.colorButton(user);
+					System.out.println("Post color");					
+				}
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

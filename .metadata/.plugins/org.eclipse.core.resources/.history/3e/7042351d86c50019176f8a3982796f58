@@ -1,0 +1,74 @@
+package org.unibl.etf.main;
+
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.unibl.etf.monitoring.MonitoringUserServer;
+import org.unibl.etf.server.SocketServer;
+import org.unibl.etf.util.PropertyManager;
+
+public class Main {
+	
+	private static HashMap<String, ObjectOutputStream> users = new HashMap<>();
+	private static HashMap<String, ObjectInputStream> usersMonitorIn = new HashMap<>();
+	private static HashMap<String, ObjectOutputStream> usersMonitorOut = new HashMap<>();
+
+	public static void main(String[] args) {
+		String keyStorePath = PropertyManager.getInstance().getKeyStorePath();
+		String keyStorePassword = PropertyManager.getInstance().getKeyStorePassword();
+		String trustStorePath = PropertyManager.getInstance().getTrustStorePath();
+		String trustStorePassword = PropertyManager.getInstance().getTrustStorePassword();
+		
+		System.setProperty("javax.net.ssl.keyStore", keyStorePath);
+		System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword);
+		System.setProperty("javax.net.ssl.trustStore", trustStorePath);
+		System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
+		
+		System.out.println("Properties set");
+		new SocketServer().start();
+		new MonitoringUserServer().start();
+		System.out.println("Servers started");
+	}
+	
+	public static void userLoggedIn(String username, ObjectOutputStream out) {
+		users.put(username, out);
+	}
+	
+	public static void userLoggedOut(String username) {
+		users.remove(username);
+	}
+	
+	public static boolean isUserLoggedIn(String username) {
+		return users.containsKey(username);
+	}
+	
+	public static ObjectOutputStream getOutputStream(String username) {
+		return users.get(username);
+	}
+	
+	public static ArrayList<ObjectOutputStream> getAllActiveStreams(String username) {
+		ArrayList<ObjectOutputStream> list = new ArrayList<>();
+		for(Map.Entry<String, ObjectOutputStream> entry : users.entrySet()) {
+			if(!entry.getKey().equals(username)) {
+				list.add(entry.getValue());
+			}
+		}
+		return list;
+	}
+	
+	public static void addMonitorIn(String username, ObjectInputStream in) {
+		usersMonitorIn.put(username, in);
+	}
+	
+	public static void addMonitorOut(String username, ObjectOutputStream out) {
+		usersMonitorOut.put(username, out);
+	}
+	
+	public static ObjectInputStream getMonitorIn(String username) {
+		return usersMonitorIn.get(username);
+	}
+
+}

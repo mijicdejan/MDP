@@ -1,0 +1,11 @@
+package org.unibl.etf.service;
+
+import org.unibl.etf.model.User;
+
+public class AccountsService {
+	
+	public static User createAccount() {
+		
+	}
+
+}
